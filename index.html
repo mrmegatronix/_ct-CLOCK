@@ -15,7 +15,7 @@
 <body>
     <header class="app-header no-print">
         <div class="header-logo">
-            <div class="logo-icon"><i data-lucide="clock"></i></div>
+            <img src="logo.jpg" alt="Coasters Tavern Logo" class="header-logo-img">
             <div class="logo-text">
                 <h1>Coasters Tavern</h1>
                 <span>Staff Portal & Payroll Admin</span>
@@ -152,6 +152,11 @@
 
                                     <div class="shift-timer-display" id="shift-timer-display" style="display: none;">
                                         Shift Duration: <span id="shift-duration-val">00:00:00</span>
+                                        <div class="break-controls" id="break-controls" style="margin-top: 10px;">
+                                            <button class="btn btn-sm btn-outline" id="break-btn" onclick="toggleBreak()">
+                                                <i data-lucide="coffee"></i> <span id="break-btn-text">Start Break</span>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
 
