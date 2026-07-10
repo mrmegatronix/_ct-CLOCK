@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coasters Tavern - Shift Clock-In & PAYE Portal</title>
+    <!-- Outfit Font for Modern Premium Feel -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- Lucide Icons for Clean Modern UI -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <header class="app-header no-print">
+        <div class="header-logo">
+            <div class="logo-icon"><i data-lucide="clock"></i></div>
+            <div class="logo-text">
+                <h1>Coasters Tavern</h1>
+                <span>Staff Portal & Payroll Admin</span>
+            </div>
+        </div>
+        <nav class="app-nav">
+            <button class="nav-btn active" id="nav-btn-employee" onclick="switchView('employee')">
+                <i data-lucide="smartphone"></i> Staff Mobile App
+            </button>
+            <button class="nav-btn" id="nav-btn-terminal" onclick="switchView('terminal')">
+                <i data-lucide="tablet"></i> Venue PIN Terminal
+            </button>
+            <button class="nav-btn" id="nav-btn-admin" onclick="switchView('admin')">
+                <i data-lucide="shield-check"></i> Manager / PAYE Portal
+            </button>
+        </nav>
+    </header>
+
+    <main class="app-content">
+        <!-- View 1: Staff Mobile App (Simulated Phone Viewport) -->
+        <section id="employee-view" class="view-panel active no-print">
+            <div class="simulation-layout">
+                <!-- Left side: Simulation Controls -->
+                <div class="sim-controls card">
+                    <div class="card-header">
+                        <h3><i data-lucide="sliders"></i> GPS & Venue Simulator</h3>
+                        <p>Simulate staff physical location relative to Coasters Tavern (1 Daniels Rd, Redwood, Christchurch).</p>
+                    </div>
+                    <div class="control-group">
+                        <label for="distance-slider">Simulated Distance from Tavern:</label>
+                        <div class="slider-wrapper">
+                            <input type="range" id="distance-slider" min="0" max="250" value="10" oninput="updateSimulatedLocation(this.value)">
+                            <span id="slider-val">10m</span>
+                        </div>
+                        <div class="quick-positions">
+                            <button class="btn btn-sm btn-outline" onclick="setQuickPosition(5)">At Bar (5m)</button>
+                            <button class="btn btn-sm btn-outline" onclick="setQuickPosition(35)">Car Park (35m)</button>
+                            <button class="btn btn-sm btn-outline" onclick="setQuickPosition(150)">Home (150m)</button>
+                        </div>
+                    </div>
+                    <div class="location-details">
+                        <div class="detail-row">
+                            <span class="label">Venue Coords:</span>
+                            <span class="value">-43.4839, 172.6105</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Simulated Coords:</span>
+                            <span class="value" id="sim-coords">-43.4839, 172.6105</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Accuracy:</span>
+                            <span class="value">± 3 metres</span>
+                        </div>
+                    </div>
+                    <div class="sim-notice">
+                        <i data-lucide="info"></i>
+                        <p>This controller simulates the phone's hardware GPS chip to demonstrate how the geofence responds dynamically.</p>
+                    </div>
+                </div>
+
+                <!-- Right side: Mobile Mockup -->
+                <div class="phone-mockup">
+                    <div class="phone-notch"></div>
+                    <div class="phone-screen">
+                        <div class="phone-header">
+                            <span class="time-widget" id="phone-time">15:26</span>
+                            <div class="status-icons">
+                                <i data-lucide="wifi"></i>
+                                <i data-lucide="battery"></i>
+                            </div>
+                        </div>
+
+                        <!-- Phone Sub-views: Clock In vs Holiday Requests -->
+                        <div class="phone-sub-nav">
+                            <button class="sub-nav-btn active" id="sub-nav-clock" onclick="switchPhoneSubView('clock')">Clock-In</button>
+                            <button class="sub-nav-btn" id="sub-nav-holiday" onclick="switchPhoneSubView('holiday')">Time Off</button>
+                        </div>
+
+                        <div class="phone-body">
+                            <!-- Phone Subview: Clock In -->
+                            <div id="phone-clock-subview" class="phone-sub-panel active">
+                                <div class="profile-card">
+                                    <div class="avatar">JD</div>
+                                    <div class="profile-info">
+                                        <h4>John Doe</h4>
+                                        <p>Bar Staff</p>
+                                    </div>
+                                </div>
+
+                                <!-- Dynamic Distance Indicator -->
+                                <div class="distance-gauge card">
+                                    <div class="gauge-header">
+                                        <span>Geofence Status</span>
+                                        <span class="badge" id="gauge-badge">In Range</span>
+                                    </div>
+                                    <div class="gauge-bar-container">
+                                        <div class="gauge-bar" id="gauge-bar"></div>
+                                        <div class="gauge-marker" style="left: 8%;">
+                                            <span class="marker-label">20m</span>
+                                        </div>
+                                        <div class="gauge-marker" style="left: 20%;">
+                                            <span class="marker-label">50m</span>
+                                        </div>
+                                    </div>
+                                    <div class="distance-readout">
+                                        <span class="distance-val" id="distance-readout-val">10m</span>
+                                        <span class="distance-desc" id="distance-readout-desc">Within venue boundary</span>
+                                    </div>
+                                </div>
+
+                                <!-- Main Clock Action -->
+                                <div class="clock-action-container">
+                                    <div class="digital-clock" id="live-time">15:26:07</div>
+                                    <div class="digital-date" id="live-date">Friday, 10 July</div>
+                                    
+                                    <button class="btn-clock" id="clock-btn" onclick="toggleClock()">
+                                        <div class="clock-icon-wrapper">
+                                            <i data-lucide="power" size="32"></i>
+                                        </div>
+                                        <span id="clock-btn-text">Clock In</span>
+                                    </button>
+
+                                    <div class="shift-timer-display" id="shift-timer-display" style="display: none;">
+                                        Shift Duration: <span id="shift-duration-val">00:00:00</span>
+                                    </div>
+                                </div>
+
+                                <!-- QR Code Sign-on Bypass -->
+                                <div class="qr-bypass-section card" id="qr-bypass-card" style="display: none;">
+                                    <div class="qr-bypass-header">
+                                        <i data-lucide="qr-code"></i>
+                                        <div>
+                                            <h5>Location Flagged</h5>
+                                            <p>Scan Tavern Bar QR to authorize clock-in</p>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-sm btn-primary btn-block" onclick="simulateQRScan()">
+                                        Scan Venue QR Code
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Phone Subview: Holiday Requests -->
+                            <div id="phone-holiday-subview" class="phone-sub-panel">
+                                <div class="phone-subview-header">
+                                    <h3>Request Time Off</h3>
+                                </div>
+                                <form id="holiday-form" onsubmit="submitHolidayRequest(event)">
+                                    <div class="form-group">
+                                        <label for="holiday-start">Start Date</label>
+                                        <input type="date" id="holiday-start" required min="2026-07-10">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="holiday-end">End Date</label>
+                                        <input type="date" id="holiday-end" required min="2026-07-10">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="holiday-type">Leave Type</label>
+                                        <select id="holiday-type">
+                                            <option value="Annual Leave">Annual Leave</option>
+                                            <option value="Sick Leave">Sick Leave</option>
+                                            <option value="Unpaid Leave">Unpaid Leave</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="holiday-reason">Reason (Optional)</label>
+                                        <textarea id="holiday-reason" rows="2" placeholder="Describe leave details..."></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary btn-block">Submit Request</button>
+                                </form>
+
+                                <div class="phone-requests-list-container">
+                                    <h4>Your Requests</h4>
+                                    <div id="phone-requests-list" class="requests-list">
+                                        <!-- Dynamic items -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- View 2: Venue PIN Terminal (Phoneless Staff) -->
+        <section id="terminal-view" class="view-panel no-print">
+            <div class="terminal-container card">
+                <div class="terminal-header">
+                    <div class="terminal-logo">
+                        <i data-lucide="tablet"></i>
+                        <div>
+                            <h2>Coasters Tavern</h2>
+                            <span>Wall Terminal Clock-In</span>
+                        </div>
+                    </div>
+                    <div class="terminal-status">
+                        <span class="badge badge-success"><i data-lucide="check-circle-2"></i> Fixed Geofence Verified</span>
+                    </div>
+                </div>
+
+                <div class="terminal-layout">
+                    <!-- Keypad Input Area -->
+                    <div class="keypad-section">
+                        <div class="pin-display">
+                            <input type="password" id="pin-input" readonly placeholder="ENTER PIN">
+                        </div>
+                        <div class="keypad-grid">
+                            <button class="key-btn" onclick="appendPin('1')">1</button>
+                            <button class="key-btn" onclick="appendPin('2')">2</button>
+                            <button class="key-btn" onclick="appendPin('3')">3</button>
+                            <button class="key-btn" onclick="appendPin('4')">4</button>
+                            <button class="key-btn" onclick="appendPin('5')">5</button>
+                            <button class="key-btn" onclick="appendPin('6')">6</button>
+                            <button class="key-btn" onclick="appendPin('7')">7</button>
+                            <button class="key-btn" onclick="appendPin('8')">8</button>
+                            <button class="key-btn" onclick="appendPin('9')">9</button>
+                            <button class="key-btn danger" onclick="clearPin()">C</button>
+                            <button class="key-btn" onclick="appendPin('0')">0</button>
+                            <button class="key-btn success" onclick="submitPin()"><i data-lucide="arrow-right"></i></button>
+                        </div>
+                    </div>
+
+                    <!-- Right Side: Active Terminal Status / Roster -->
+                    <div class="terminal-info">
+                        <h3>Employee Quick Reference PINs</h3>
+                        <div class="pin-reference-list">
+                            <div class="pin-ref-item"><span>Jane Smith (Kitchen)</span> <strong>2222</strong></div>
+                            <div class="pin-ref-item"><span>Bob Johnson (Duty Mgr)</span> <strong>3333</strong></div>
+                            <div class="pin-ref-item"><span>Alice Green (Duty Mgr)</span> <strong>4444</strong></div>
+                        </div>
+                        <div id="terminal-feedback" class="terminal-feedback">
+                            <!-- Feedback alert message -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- View 3: Manager / PAYE Portal -->
+        <section id="admin-view" class="view-panel">
+            <!-- Summary Stats (No Print) -->
+            <div class="stats-row no-print">
+                <div class="stat-card card">
+                    <div class="stat-icon info"><i data-lucide="users"></i></div>
+                    <div class="stat-content">
+                        <span class="stat-label">On Shift Now</span>
+                        <h2 id="stat-on-shift">0</h2>
+                    </div>
+                </div>
+                <div class="stat-card card text-danger">
+                    <div class="stat-icon warning" id="stat-flagged-icon"><i data-lucide="alert-triangle"></i></div>
+                    <div class="stat-content">
+                        <span class="stat-label">Red Flagged Shifts</span>
+                        <h2 id="stat-flagged">0</h2>
+                    </div>
+                </div>
+                <div class="stat-card card">
+                    <div class="stat-icon success"><i data-lucide="calendar"></i></div>
+                    <div class="stat-content">
+                        <span class="stat-label">Pending Holidays</span>
+                        <h2 id="stat-holidays">0</h2>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabbed Panel in Admin -->
+            <div class="admin-tabs-container card">
+                <div class="admin-tabs no-print">
+                    <button class="admin-tab-btn active" id="tab-paye" onclick="switchAdminTab('paye')"><i data-lucide="dollar-sign"></i> PAYE Weekly Summary</button>
+                    <button class="admin-tab-btn" id="tab-logs" onclick="switchAdminTab('logs')"><i data-lucide="history"></i> Geofence Clock-In Logs</button>
+                    <button class="admin-tab-btn" id="tab-holidays" onclick="switchAdminTab('holidays')"><i data-lucide="calendar"></i> Holiday Approvals</button>
+                </div>
+
+                <!-- Admin Tab Content 1: PAYE Summary (Printable) -->
+                <div id="admin-paye-panel" class="admin-tab-panel active">
+                    <div class="panel-header no-print">
+                        <div>
+                            <h3>PAYE Employee Weekly Timesheet Summary</h3>
+                            <p>End of week report showing aggregated regular and overtime hours, gross earnings, and PAYE tax deductions.</p>
+                        </div>
+                        <div class="actions">
+                            <button class="btn btn-outline" onclick="window.print()"><i data-lucide="printer"></i> PDF Summary</button>
+                            <button class="btn btn-primary" onclick="exportToCSV()"><i data-lucide="download"></i> Export CSV</button>
+                        </div>
+                    </div>
+
+                    <!-- Printable Invoice Header -->
+                    <div class="print-only-header">
+                        <h2>Coasters Tavern - PAYE Payroll Summary</h2>
+                        <p><strong>Location:</strong> 1 Daniels Road Redwood, Christchurch, New Zealand</p>
+                        <p><strong>Report Date:</strong> Friday, 10 July 2026</p>
+                        <hr>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="report-table" id="paye-table">
+                            <thead>
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>Role</th>
+                                    <th>Clock-In Method</th>
+                                    <th>Normal Hours</th>
+                                    <th>Overtime (1.5x)</th>
+                                    <th>Total Hours</th>
+                                    <th>Gross Pay ($)</th>
+                                    <th>PAYE Tax ($)</th>
+                                    <th>Net Pay ($)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="paye-table-body">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Admin Tab Content 2: Geofence Logs -->
+                <div id="admin-logs-panel" class="admin-tab-panel">
+                    <div class="panel-header no-print">
+                        <div>
+                            <h3>Geofence Clock-In Logs</h3>
+                            <p>Chronological audit log of all clock-in attempts and their GPS accuracy verification status.</p>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="report-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Employee</th>
+                                    <th>Event</th>
+                                    <th>Method</th>
+                                    <th>Distance</th>
+                                    <th>Coordinates</th>
+                                    <th>Geofence Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logs-table-body">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Admin Tab Content 3: Holiday Approvals -->
+                <div id="admin-holidays-panel" class="admin-tab-panel">
+                    <div class="panel-header no-print">
+                        <div>
+                            <h3>Staff Leave Requests</h3>
+                            <p>Approve or deny submitted staff holiday, sick, and unpaid leave requests.</p>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="report-table">
+                            <thead>
+                                <tr>
+                                    <th>Submit Date</th>
+                                    <th>Employee</th>
+                                    <th>Role</th>
+                                    <th>Leave Type</th>
+                                    <th>Dates</th>
+                                    <th>Total Days</th>
+                                    <th>Reason</th>
+                                    <th>Status</th>
+                                    <th class="no-print">Approval Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="holidays-table-body">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Scanner Mock Modal Overlay -->
+    <div id="qr-modal" class="modal no-print">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Scanning Venue QR Code...</h3>
+                <button class="close-btn" onclick="closeQRModal()">&times;</button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="qr-camera-feed">
+                    <div class="scanner-laser"></div>
+                    <i data-lucide="qr-code" size="80" class="qr-placeholder"></i>
+                </div>
+                <p>Align the Coasters Tavern Counter QR code within the frame to authorize clock-in.</p>
+                <div class="alert alert-success" id="qr-success-message" style="display: none;">
+                    <i data-lucide="check-circle-2"></i> QR Code Successfully Scanned! Location Verified.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Logic script -->
+    <script src="app.js"></script>
+</body>
+</html>
