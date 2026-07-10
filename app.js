@@ -348,6 +348,21 @@ function toggleClock() {
         // Clocking Out
         const activeShift = activeShifts[userId];
         
+        if (activeShift.onBreak) {
+            logs.unshift({
+                id: Date.now() - 1,
+                employeeId: userId,
+                employeeName: currentUser.name,
+                role: currentUser.role,
+                timestamp: now.toISOString(),
+                event: "Break-End",
+                method: activeShift.method,
+                distance: simulatedDistance,
+                coordinates: coordsStr,
+                status: "Green Pass"
+            });
+        }
+
         logs.unshift({
             id: Date.now(),
             employeeId: userId,
@@ -426,7 +441,8 @@ function submitPin() {
             coordinates: `${VENUE_LAT}, ${VENUE_LNG}`,
             distance: 0,
             status: "Green Pass",
-            method: "PIN Terminal"
+            method: "PIN Terminal",
+            onBreak: false
         };
 
         logs.unshift({
@@ -447,8 +463,53 @@ function submitPin() {
                 <i data-lucide="check-circle-2"></i> Welcome, ${employee.name}. Clocked In at ${now.toLocaleTimeString()}.
             </div>
         `;
+        saveLogs();
+        saveActiveShifts();
+        clearPin();
+        renderAll();
+        lucide.createIcons();
     } else {
-        // Clock Out
+        // Clocked in action prompt (Select break / Clock Out)
+        const onBreak = activeShifts[employee.id].onBreak;
+        const breakBtnHtml = onBreak 
+            ? `<button class="btn btn-primary" onclick="terminalAction('${employee.id}', 'Break-End')">End Break</button>`
+            : `<button class="btn btn-outline" onclick="terminalAction('${employee.id}', 'Break-Start')">Start Break</button>`;
+        
+        feedbackEl.innerHTML = `
+            <div class="terminal-action-prompt card" style="background-color:rgba(0,0,0,0.2); padding:16px; border:1px solid var(--border-color); margin-top:12px;">
+                <h4 style="font-size:0.95rem; margin-bottom:8px;">Hello, ${employee.name}. Select Action:</h4>
+                <div style="display:flex; gap:10px;">
+                    ${breakBtnHtml}
+                    <button class="btn btn-primary" style="background-color:var(--color-danger); color:#fff" onclick="terminalAction('${employee.id}', 'Clock-Out')">Clock Out</button>
+                </div>
+            </div>
+        `;
+        lucide.createIcons();
+        clearPin();
+    }
+}
+
+function terminalAction(empId, action) {
+    const employee = EMPLOYEES[empId];
+    const now = new Date();
+    const feedbackEl = document.getElementById("terminal-feedback");
+
+    if (action === 'Clock-Out') {
+        if (activeShifts[employee.id].onBreak) {
+            logs.unshift({
+                id: Date.now() - 1,
+                employeeId: employee.id,
+                employeeName: employee.name,
+                role: employee.role,
+                timestamp: now.toISOString(),
+                event: "Break-End",
+                method: "PIN Terminal",
+                distance: 0,
+                coordinates: `${VENUE_LAT}, ${VENUE_LNG}`,
+                status: "Green Pass"
+            });
+        }
+
         logs.unshift({
             id: Date.now(),
             employeeId: employee.id,
@@ -461,21 +522,100 @@ function submitPin() {
             coordinates: `${VENUE_LAT}, ${VENUE_LNG}`,
             status: "Green Pass"
         });
-
         delete activeShifts[employee.id];
-
-        feedbackEl.innerHTML = `
-            <div class="alert alert-success">
-                <i data-lucide="check-circle-2"></i> Goodbye, ${employee.name}. Clocked Out at ${now.toLocaleTimeString()}.
-            </div>
-        `;
+        feedbackEl.innerHTML = `<div class="alert alert-success"><i data-lucide="check-circle-2"></i> ${employee.name} clocked out successfully.</div>`;
+    } else if (action === 'Break-Start') {
+        activeShifts[employee.id].onBreak = true;
+        activeShifts[employee.id].breakStartTime = now.toISOString();
+        
+        logs.unshift({
+            id: Date.now(),
+            employeeId: employee.id,
+            employeeName: employee.name,
+            role: employee.role,
+            timestamp: now.toISOString(),
+            event: "Break-Start",
+            method: "PIN Terminal",
+            distance: 0,
+            coordinates: `${VENUE_LAT}, ${VENUE_LNG}`,
+            status: "Green Pass"
+        });
+        feedbackEl.innerHTML = `<div class="alert alert-success"><i data-lucide="check-circle-2"></i> ${employee.name} started break.</div>`;
+    } else if (action === 'Break-End') {
+        activeShifts[employee.id].onBreak = false;
+        
+        logs.unshift({
+            id: Date.now(),
+            employeeId: employee.id,
+            employeeName: employee.name,
+            role: employee.role,
+            timestamp: now.toISOString(),
+            event: "Break-End",
+            method: "PIN Terminal",
+            distance: 0,
+            coordinates: `${VENUE_LAT}, ${VENUE_LNG}`,
+            status: "Green Pass"
+        });
+        feedbackEl.innerHTML = `<div class="alert alert-success"><i data-lucide="check-circle-2"></i> ${employee.name} ended break.</div>`;
     }
 
     saveLogs();
     saveActiveShifts();
-    clearPin();
     renderAll();
     lucide.createIcons();
+}
+
+function toggleBreak() {
+    const userId = currentUser.id;
+    const now = new Date();
+    const breakBtnText = document.getElementById("break-btn-text");
+    
+    if (!activeShifts[userId]) return;
+    
+    const activeShift = activeShifts[userId];
+    const latOffset = (simulatedDistance * 0.000009);
+    const coordsStr = `${(VENUE_LAT + latOffset).toFixed(6)}, ${(VENUE_LNG + latOffset).toFixed(6)}`;
+
+    if (!activeShift.onBreak) {
+        activeShift.onBreak = true;
+        activeShift.breakStartTime = now.toISOString();
+        
+        logs.unshift({
+            id: Date.now(),
+            employeeId: userId,
+            employeeName: currentUser.name,
+            role: currentUser.role,
+            timestamp: now.toISOString(),
+            event: "Break-Start",
+            method: activeShift.method,
+            distance: simulatedDistance,
+            coordinates: coordsStr,
+            status: "Green Pass"
+        });
+
+        breakBtnText.textContent = "End Break";
+    } else {
+        activeShift.onBreak = false;
+        
+        logs.unshift({
+            id: Date.now(),
+            employeeId: userId,
+            employeeName: currentUser.name,
+            role: currentUser.role,
+            timestamp: now.toISOString(),
+            event: "Break-End",
+            method: activeShift.method,
+            distance: simulatedDistance,
+            coordinates: coordsStr,
+            status: "Green Pass"
+        });
+
+        breakBtnText.textContent = "Start Break";
+    }
+
+    saveLogs();
+    saveActiveShifts();
+    renderAll();
 }
 
 // 8. Holiday Management
@@ -535,8 +675,6 @@ function handleHolidayDecision(id, decision) {
 function calculatePAYEData() {
     const weeklyData = {};
 
-    // Group logs by employee
-    // To construct shifts, we sort logs chronologically per employee, pairing Clock-In with subsequent Clock-Out
     Object.keys(EMPLOYEES).forEach(empId => {
         const emp = EMPLOYEES[empId];
         weeklyData[empId] = {
@@ -550,35 +688,80 @@ function calculatePAYEData() {
         };
     });
 
-    // Extract sorted chronologically
-    const chronLogs = [...logs].reverse();
+    // Group logs by employee
+    const empLogs = {};
+    logs.forEach(log => {
+        if (!empLogs[log.employeeId]) empLogs[log.employeeId] = [];
+        empLogs[log.employeeId].push(log);
+    });
 
-    // Temporary storage for matching active checkins during logs iteration
-    const tempActiveShifts = {};
-
-    chronLogs.forEach(log => {
-        const empId = log.employeeId;
-        if (!weeklyData[empId]) return; // unrecognized employee
+    Object.keys(weeklyData).forEach(empId => {
+        const rawLogs = empLogs[empId] || [];
+        // Sort chronologically
+        const chronLogs = [...rawLogs].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
         
-        weeklyData[empId].methods.add(log.method);
+        // Track methods
+        chronLogs.forEach(l => weeklyData[empId].methods.add(l.method));
 
-        if (log.event === "Clock-In") {
-            tempActiveShifts[empId] = new Date(log.timestamp);
-        } else if (log.event === "Clock-Out" && tempActiveShifts[empId]) {
-            const clockIn = tempActiveShifts[empId];
-            const clockOut = new Date(log.timestamp);
-            const durationHrs = (clockOut - clockIn) / (1000 * 60 * 60);
+        // Group into shifts and breaks
+        const shifts = [];
+        let activeIn = null;
+        let activeBreaks = [];
+        let currentBreakStart = null;
 
-            // Daily 8-hour overtime threshold
-            if (durationHrs > 8) {
-                weeklyData[empId].normalHours += 8;
-                weeklyData[empId].overtimeHours += (durationHrs - 8);
-            } else {
-                weeklyData[empId].normalHours += durationHrs;
+        chronLogs.forEach(log => {
+            if (log.event === "Clock-In") {
+                activeIn = new Date(log.timestamp);
+                activeBreaks = [];
+            } else if (log.event === "Break-Start" && activeIn) {
+                currentBreakStart = new Date(log.timestamp);
+            } else if (log.event === "Break-End" && currentBreakStart) {
+                activeBreaks.push({
+                    start: currentBreakStart,
+                    end: new Date(log.timestamp)
+                });
+                currentBreakStart = null;
+            } else if (log.event === "Clock-Out" && activeIn) {
+                const outTime = new Date(log.timestamp);
+                shifts.push({
+                    in: activeIn,
+                    out: outTime,
+                    breaks: [...activeBreaks]
+                });
+                activeIn = null;
+                activeBreaks = [];
             }
+        });
 
-            delete tempActiveShifts[empId];
-        }
+        // Group completed shifts by local date
+        const dayHours = {}; // keyed by "YYYY-MM-DD"
+        
+        shifts.forEach(shift => {
+            const localDate = new Date(shift.in).toISOString().split('T')[0];
+            
+            // Calculate shift duration
+            let shiftDuration = (shift.out - shift.in) / (1000 * 60 * 60); // hours
+            
+            // Subtract breaks
+            let breakDuration = 0;
+            shift.breaks.forEach(b => {
+                breakDuration += (b.end - b.start) / (1000 * 60 * 60);
+            });
+            
+            const netDuration = Math.max(0, shiftDuration - breakDuration);
+            
+            dayHours[localDate] = (dayHours[localDate] || 0) + netDuration;
+        });
+
+        // Sum daily hours and calculate daily overtime (over 8h per day)
+        Object.values(dayHours).forEach(hours => {
+            if (hours > 8) {
+                weeklyData[empId].normalHours += 8;
+                weeklyData[empId].overtimeHours += (hours - 8);
+            } else {
+                weeklyData[empId].normalHours += hours;
+            }
+        });
     });
 
     // Format output
@@ -616,6 +799,11 @@ function renderMobileUI() {
         }
         clockBtnText.textContent = "Clock Out";
         timerDisplay.style.display = "block";
+        
+        const breakBtnText = document.getElementById("break-btn-text");
+        if (breakBtnText) {
+            breakBtnText.textContent = shift.onBreak ? "End Break" : "Start Break";
+        }
     } else {
         clockBtn.className = "btn-clock";
         clockBtnText.textContent = "Clock In";
