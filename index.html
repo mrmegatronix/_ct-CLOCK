@@ -32,6 +32,18 @@
                 <i data-lucide="shield-check"></i> Manager / PAYE Portal
             </button>
         </nav>
+        <div class="header-share">
+            <button class="nav-btn btn-outline" id="share-btn" onclick="toggleShareQR(event)">
+                <i data-lucide="qr-code"></i> Share QR
+            </button>
+            <div class="qr-dropdown card" id="share-qr-dropdown" style="display: none;">
+                <h4>Portal QR Link</h4>
+                <div class="qr-code-img-wrapper">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://mrmegatronix.github.io/_ct-CLOCK/" alt="App QR Code">
+                </div>
+                <p>Scan to open portal on your mobile phone</p>
+            </div>
+        </div>
     </header>
 
     <main class="app-content">

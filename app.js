@@ -773,3 +773,20 @@ function exportToCSV() {
     link.click();
     document.body.removeChild(link);
 }
+
+// 12. Share QR Dropdown Controls
+function toggleShareQR(event) {
+    event.stopPropagation();
+    const dropdown = document.getElementById("share-qr-dropdown");
+    const isVisible = dropdown.style.display === "block";
+    dropdown.style.display = isVisible ? "none" : "block";
+}
+
+// Global click handler to close QR dropdown on outside clicks
+document.addEventListener("click", (event) => {
+    const dropdown = document.getElementById("share-qr-dropdown");
+    const shareBtn = document.getElementById("share-btn");
+    if (dropdown && dropdown.style.display === "block" && !dropdown.contains(event.target) && event.target !== shareBtn && !shareBtn.contains(event.target)) {
+        dropdown.style.display = "none";
+    }
+});
