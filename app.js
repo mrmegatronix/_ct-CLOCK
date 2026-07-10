@@ -50,7 +50,10 @@ let currentUser = EMPLOYEES["1111"]; // John Doe as default mobile user
 let currentPinInput = "";
 
 // 2. Initialize Application
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+    // Load config from .env first
+    await loadEnvConfig();
+
     // Load local storage or default seed data
     if (localStorage.getItem("ct_logs")) {
         logs = JSON.parse(localStorage.getItem("ct_logs"));
@@ -82,6 +85,42 @@ document.addEventListener("DOMContentLoaded", () => {
     // Initial table renders
     renderAll();
 });
+
+async function loadEnvConfig() {
+    try {
+        const response = await fetch('.env');
+        if (response.ok) {
+            const text = await response.text();
+            const lines = text.split('\n');
+            lines.forEach(line => {
+                const parts = line.split('=');
+                if (parts.length === 2) {
+                    const key = parts[0].trim();
+                    const value = parts[1].trim();
+                    if (key === 'ADMIN_PIN') {
+                        // Dynamic insertion of Admin into EMPLOYEES
+                        EMPLOYEES[value] = { id: value, name: "System Admin", role: "Administrator", rate: 45.00 };
+                    }
+                }
+            });
+        } else {
+            // Fallback if file fetched but error status
+            EMPLOYEES["5555"] = { id: "5555", name: "System Admin", role: "Administrator", rate: 45.00 };
+        }
+    } catch (e) {
+        console.warn("Could not load .env file, using default admin 5555 fallback", e);
+        EMPLOYEES["5555"] = { id: "5555", name: "System Admin", role: "Administrator", rate: 45.00 };
+    }
+}
+
+function renderPinReference() {
+    const pinRefListEl = document.getElementById("pin-ref-list");
+    if (!pinRefListEl) return;
+    
+    pinRefListEl.innerHTML = Object.values(EMPLOYEES).map(emp => {
+        return `<div class="pin-ref-item"><span>${emp.name} (${emp.role})</span> <strong>${emp.id}</strong></div>`;
+    }).join("");
+}
 
 function saveLogs() {
     localStorage.setItem("ct_logs", JSON.stringify(logs));
@@ -561,6 +600,7 @@ function renderAll() {
     renderPAYETable();
     renderLogsTable();
     renderStats();
+    renderPinReference();
 }
 
 function renderMobileUI() {
