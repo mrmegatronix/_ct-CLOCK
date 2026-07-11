@@ -791,25 +791,23 @@ function calculatePAYEData() {
 
         // Group completed shifts by local date
         const dayHours = {}; // keyed by "YYYY-MM-DD"
-        
-        shifts.forEach(shift => {
-            const localDate = new Date(shift.in).toISOString().split('T')[0];
+                shifts.forEach(shift => {
+            const shiftId = `shift_${empId}_${shift.in.toISOString()}`;
+            const approval = approvalStates[shiftId] || { status: "Pending" };
             
-            // Calculate shift duration
-            let shiftDuration = (shift.out - shift.in) / (1000 * 60 * 60); // hours
-            
-            // Subtract breaks
-            let breakDuration = 0;
-            shift.breaks.forEach(b => {
-                breakDuration += (b.end - b.start) / (1000 * 60 * 60);
-            });
-            
-            const netDuration = Math.max(0, shiftDuration - breakDuration);
-            
-            dayHours[localDate] = (dayHours[localDate] || 0) + netDuration;
+            if (approval.status === "Authorised") {
+                const localDate = new Date(shift.in).toISOString().split('T')[0];
+                let shiftDuration = (shift.out - shift.in) / (1000 * 60 * 60); // hours
+                
+                let breakDuration = 0;
+                shift.breaks.forEach(b => {
+                    breakDuration += (b.end - b.start) / (1000 * 60 * 60);
+                });
+                
+                const netDuration = Math.max(0, shiftDuration - breakDuration);
+                dayHours[localDate] = (dayHours[localDate] || 0) + netDuration;
+            }
         });
-
-        // Sum daily hours and calculate daily overtime (over 8h per day)
         Object.values(dayHours).forEach(hours => {
             if (hours > 8) {
                 weeklyData[empId].normalHours += 8;
@@ -832,7 +830,6 @@ function calculatePAYEData() {
     });
 }
 
-// 10. Renders
 function renderAll() {
     renderMobileUI();
     renderHolidayLists();
@@ -840,8 +837,10 @@ function renderAll() {
     renderLogsTable();
     renderStats();
     renderPinReference();
+    renderRosterPlanner();
+    renderPhoneRoster();
+    renderApprovalsTable();
 }
-
 function renderMobileUI() {
     const clockBtn = document.getElementById("clock-btn");
     const clockBtnText = document.getElementById("clock-btn-text");
@@ -950,7 +949,6 @@ function renderPAYETable() {
         `;
     }).join("");
 }
-
 function renderLogsTable() {
     const tableBody = document.getElementById("logs-table-body");
     if (!tableBody) return;
@@ -960,36 +958,61 @@ function renderLogsTable() {
         return;
     }
 
-    tableBody.innerHTML = logs.map(log => {
-        let statusDotClass = "green";
-        if (log.status === "Orange Warning") statusDotClass = "orange";
-        if (log.status === "Red Flagged") statusDotClass = "red";
+    // Sort logs chronologically desc
+    const sortedLogs = [...logs].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
-        const formattedTime = new Date(log.timestamp).toLocaleString();
-        
-        let actionBtn = "";
-        if (log.status === "Red Flagged") {
-            actionBtn = `<button class="btn btn-sm btn-outline no-print" onclick="resolveFlag(${log.id})"><i data-lucide="check-circle-2"></i> Approve Flag</button>`;
-        }
+    // Group logs by local date string
+    const grouped = {};
+    sortedLogs.forEach(log => {
+        const dateStr = new Date(log.timestamp).toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+        if (!grouped[dateStr]) grouped[dateStr] = [];
+        grouped[dateStr].push(log);
+    });
 
-        return `
-            <tr>
-                <td>${formattedTime}</td>
-                <td><strong>${log.employeeName}</strong></td>
-                <td><span style="font-weight:600; color:${log.event === 'Clock-In' ? 'var(--color-success)' : 'var(--color-text-muted)'}">${log.event}</span></td>
-                <td>${log.method}</td>
-                <td>${log.distance}m</td>
-                <td><small>${log.coordinates}</small></td>
-                <td>
-                    <span class="status-pill">
-                        <span class="status-dot ${statusDotClass}"></span>
-                        ${log.status}
-                    </span>
-                </td>
-                <td>${actionBtn}</td>
+    let rowsHtml = "";
+    Object.keys(grouped).forEach(date => {
+        rowsHtml += `
+            <tr class="log-date-header">
+                <td colspan="8">${date}</td>
             </tr>
         `;
-    }).join("");
+        grouped[date].forEach(log => {
+            let statusDotClass = "green";
+            if (log.status === "Orange Warning") statusDotClass = "orange";
+            if (log.status === "Red Flagged") statusDotClass = "red";
+
+            const formattedTime = new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            
+            let actionBtn = "";
+            if (log.status === "Red Flagged") {
+                actionBtn = `<button class="btn btn-sm btn-outline no-print" onclick="resolveFlag(${log.id})"><i data-lucide="check-circle-2"></i> Approve Flag</button>`;
+            }
+
+            rowsHtml += `
+                <tr>
+                    <td>${formattedTime}</td>
+                    <td><strong>${log.employeeName}</strong></td>
+                    <td><span style="font-weight:600; color:${log.event.includes('In') || log.event.includes('Start') ? 'var(--color-success)' : 'var(--color-text-muted)'}">${log.event}</span></td>
+                    <td>${log.method}</td>
+                    <td>${log.distance}m</td>
+                    <td>
+                        <strong>${log.coordinates}</strong>
+                        <span class="log-meta-details">Acc: ${log.accuracy || "± 3m"} | IP: ${log.ip || "122.56.24.110"}</span>
+                    </td>
+                    <td>
+                        <span class="status-pill">
+                            <span class="status-dot ${statusDotClass}"></span>
+                            ${log.status}
+                        </span>
+                        <span class="log-meta-details" style="margin-top:2px;">${log.userAgent || "Web desktop client (Linux)"}</span>
+                    </td>
+                    <td>${actionBtn}</td>
+                </tr>
+            `;
+        });
+    });
+
+    tableBody.innerHTML = rowsHtml;
     lucide.createIcons();
 }
 
@@ -1074,3 +1097,229 @@ document.addEventListener("click", (event) => {
         dropdown.style.display = "none";
     }
 });
+
+// 13. Roster Management Functions
+function initRosterSelectors() {
+    const select = document.getElementById("roster-employee");
+    if (select) {
+        select.innerHTML = Object.keys(EMPLOYEES).map(empId => {
+            return `<option value="${empId}">${EMPLOYEES[empId].name} (${EMPLOYEES[empId].role})</option>`;
+        }).join("");
+    }
+}
+
+function submitRosterShift(event) {
+    event.preventDefault();
+    const empId = document.getElementById("roster-employee").value;
+    const dateVal = document.getElementById("roster-date").value;
+    const startVal = document.getElementById("roster-start").value;
+    const endVal = document.getElementById("roster-end").value;
+
+    if (!empId || !dateVal || !startVal || !endVal) return;
+
+    const newShift = {
+        id: Date.now(),
+        employeeId: empId,
+        employeeName: EMPLOYEES[empId].name,
+        role: EMPLOYEES[empId].role,
+        date: dateVal,
+        start: startVal,
+        end: endVal
+    };
+
+    rosterShifts.unshift(newShift);
+    localStorage.setItem("ct_roster", JSON.stringify(rosterShifts));
+    renderAll();
+    document.getElementById("roster-form").reset();
+}
+
+function deleteRosterShift(shiftId) {
+    rosterShifts = rosterShifts.filter(s => s.id !== shiftId);
+    localStorage.setItem("ct_roster", JSON.stringify(rosterShifts));
+    renderAll();
+}
+
+function renderRosterPlanner() {
+    const tableBody = document.getElementById("roster-table-body");
+    if (!tableBody) return;
+
+    if (rosterShifts.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="6" class="text-center">No shifts scheduled</td></tr>`;
+        return;
+    }
+
+    tableBody.innerHTML = rosterShifts.map(shift => {
+        const dateStr = new Date(shift.date).toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' });
+        return `
+            <tr>
+                <td>${dateStr}</td>
+                <td><strong>${shift.employeeName}</strong></td>
+                <td>${shift.role}</td>
+                <td>${shift.start} - ${shift.end}</td>
+                <td><span class="badge badge-success">Scheduled</span></td>
+                <td class="no-print">
+                    <button class="btn btn-sm btn-outline" style="color:var(--color-danger); border-color:rgba(239,68,68,0.2)" onclick="deleteRosterShift(${shift.id})">Cancel</button>
+                </td>
+            </tr>
+        `;
+    }).join("");
+}
+
+function renderPhoneRoster() {
+    const listEl = document.getElementById("phone-roster-list");
+    if (!listEl) return;
+
+    const myShifts = rosterShifts.filter(s => s.employeeId === currentUser.id);
+
+    if (myShifts.length === 0) {
+        listEl.innerHTML = `<p class="text-center" style="padding: 12px; color:var(--color-text-muted)">No upcoming shifts rostered.</p>`;
+        return;
+    }
+
+    listEl.innerHTML = myShifts.map(shift => {
+        const dateStr = new Date(shift.date).toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'short' });
+        return `
+            <div class="phone-roster-card">
+                <h5>${dateStr}</h5>
+                <p><strong>Time:</strong> ${shift.start} - ${shift.end}</p>
+                <p><strong>Role:</strong> ${shift.role}</p>
+            </div>
+        `;
+    }).join("");
+}
+
+// 14. Completed Shifts Authorization
+function compileCompletedShifts() {
+    const completedShifts = [];
+    const empLogs = {};
+    
+    logs.forEach(log => {
+        if (!empLogs[log.employeeId]) empLogs[log.employeeId] = [];
+        empLogs[log.employeeId].push(log);
+    });
+
+    Object.keys(EMPLOYEES).forEach(empId => {
+        const rawLogs = empLogs[empId] || [];
+        const chronLogs = [...rawLogs].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+        let activeIn = null;
+        let activeBreaks = [];
+        let currentBreakStart = null;
+
+        chronLogs.forEach(log => {
+            if (log.event === "Clock-In") {
+                activeIn = log;
+                activeBreaks = [];
+            } else if (log.event === "Break-Start" && activeIn) {
+                currentBreakStart = log;
+            } else if (log.event === "Break-End" && currentBreakStart) {
+                activeBreaks.push({
+                    start: new Date(currentBreakStart.timestamp),
+                    end: new Date(log.timestamp)
+                });
+                currentBreakStart = null;
+            } else if (log.event === "Clock-Out" && activeIn) {
+                const clockInTime = new Date(activeIn.timestamp);
+                const clockOutTime = new Date(log.timestamp);
+                
+                let shiftDuration = (clockOutTime - clockInTime) / (1000 * 60 * 60);
+                let breakDuration = 0;
+                activeBreaks.forEach(b => {
+                    breakDuration += (b.end - b.start) / (1000 * 60 * 60);
+                });
+                const netHours = Math.max(0, shiftDuration - breakDuration);
+                const shiftId = `shift_${empId}_${activeIn.timestamp}`;
+
+                let geofenceStatus = "Green Pass";
+                if (activeIn.status === "Red Flagged" || log.status === "Red Flagged") {
+                    geofenceStatus = "Red Flagged";
+                } else if (activeIn.status === "Orange Warning" || log.status === "Orange Warning") {
+                    geofenceStatus = "Orange Warning";
+                }
+
+                completedShifts.push({
+                    id: shiftId,
+                    employeeId: empId,
+                    employeeName: EMPLOYEES[empId].name,
+                    role: EMPLOYEES[empId].role,
+                    clockIn: activeIn.timestamp,
+                    clockOut: log.timestamp,
+                    netHours: netHours,
+                    method: activeIn.method,
+                    geofenceStatus: geofenceStatus
+                });
+
+                activeIn = null;
+                activeBreaks = [];
+            }
+        });
+    });
+
+    return completedShifts;
+}
+
+function renderApprovalsTable() {
+    const tableBody = document.getElementById("approvals-table-body");
+    if (!tableBody) return;
+
+    const completedShifts = compileCompletedShifts();
+    
+    if (completedShifts.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="9" class="text-center">No completed shifts found</td></tr>`;
+        return;
+    }
+
+    tableBody.innerHTML = completedShifts.map(shift => {
+        const approval = approvalStates[shift.id] || { status: "Pending", authorisedBy: null };
+        
+        let statusBadgeClass = "badge-warning";
+        if (approval.status === "Authorised") statusBadgeClass = "badge-success";
+        
+        let geofenceBadgeClass = "green";
+        if (shift.geofenceStatus === "Orange Warning") geofenceBadgeClass = "orange";
+        if (shift.geofenceStatus === "Red Flagged") geofenceBadgeClass = "red";
+
+        const clockInStr = new Date(shift.clockIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const clockOutStr = new Date(shift.clockOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const dateStr = new Date(shift.clockIn).toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' });
+
+        let actionHtml = "";
+        if (approval.status === "Pending") {
+            actionHtml = `<button class="btn btn-sm btn-primary" onclick="authoriseShift('${shift.id}')">Authorise</button>`;
+        } else {
+            actionHtml = `<span style="font-size:0.8rem; color:var(--color-text-muted)">Authorised by ${approval.authorisedBy}</span>`;
+        }
+
+        return `
+            <tr>
+                <td>${dateStr}</td>
+                <td><strong>${shift.employeeName}</strong></td>
+                <td>${shift.role}</td>
+                <td>${clockInStr} - ${clockOutStr}</td>
+                <td>${shift.netHours.toFixed(2)} hrs</td>
+                <td>${shift.method}</td>
+                <td>
+                    <span class="status-pill">
+                        <span class="status-dot ${geofenceBadgeClass}"></span>
+                        ${shift.geofenceStatus}
+                    </span>
+                </td>
+                <td><span class="badge ${statusBadgeClass}">${approval.status}</span></td>
+                <td class="no-print">${actionHtml}</td>
+            </tr>
+        `;
+    }).join("");
+}
+
+function authoriseShift(shiftId) {
+    const authoriserSelect = document.getElementById("authoriser-manager");
+    const managerName = authoriserSelect ? authoriserSelect.value : "System Admin (Admin)";
+    
+    approvalStates[shiftId] = {
+        status: "Authorised",
+        authorisedBy: managerName
+    };
+    
+    saveApprovalStates();
+    renderAll();
+}
