@@ -37,7 +37,6 @@ const SEED_HOLIDAYS = [
     { id: 1, submitDate: "2026-07-08", employeeId: "1111", employeeName: "John Doe", role: "Bar Staff", type: "Annual Leave", startDate: "2026-07-20", endDate: "2026-07-24", totalDays: 5, reason: "Family holiday in Queenstown", status: "Pending" },
     { id: 2, submitDate: "2026-07-05", employeeId: "2222", employeeName: "Jane Smith", role: "Kitchen Staff", type: "Sick Leave", startDate: "2026-07-06", endDate: "2026-07-06", totalDays: 1, reason: "Dental checkup", status: "Approved" }
 ];
-
 // State variables
 let logs = [];
 let holidayRequests = [];
@@ -45,6 +44,16 @@ let activeShifts = {}; // keyed by employeeId: { clockInTime, coordinates, dista
 let simulatedDistance = 10; // default 10 metres
 let qrBypassed = false;
 let currentUser = EMPLOYEES["1111"]; // John Doe as default mobile user
+
+// Roster state variables
+let rosterShifts = [];
+let approvalStates = {};
+
+const SEED_ROSTER = [
+    { id: 1, employeeId: "1111", employeeName: "John Doe", role: "Bar Staff", date: "2026-07-12", start: "09:00", end: "17:00" },
+    { id: 2, employeeId: "2222", employeeName: "Jane Smith", role: "Kitchen Staff", date: "2026-07-12", start: "10:00", end: "18:00" },
+    { id: 3, employeeId: "3333", employeeName: "Bob Johnson", role: "Duty Manager", date: "2026-07-13", start: "08:00", end: "16:00" }
+];
 
 // Pin Terminal variables
 let currentPinInput = "";
@@ -57,7 +66,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Load local storage or default seed data
     if (localStorage.getItem("ct_logs")) {
         logs = JSON.parse(localStorage.getItem("ct_logs"));
+        logs.forEach(log => {
+            if (!log.accuracy) log.accuracy = "± 3m";
+            if (!log.ip) log.ip = "122.56.24.110";
+            if (!log.userAgent) log.userAgent = "Web desktop client (Linux)";
+        });
     } else {
+        SEED_LOGS.forEach(log => {
+            log.accuracy = "± 3m";
+            log.ip = "122.56.24.110";
+            log.userAgent = "Web desktop client (Linux)";
+        });
         logs = [...SEED_LOGS];
         saveLogs();
     }
@@ -73,6 +92,25 @@ document.addEventListener("DOMContentLoaded", async () => {
         activeShifts = JSON.parse(localStorage.getItem("ct_active_shifts"));
     }
 
+    // Load roster
+    if (localStorage.getItem("ct_roster")) {
+        rosterShifts = JSON.parse(localStorage.getItem("ct_roster"));
+    } else {
+        rosterShifts = [...SEED_ROSTER];
+        localStorage.setItem("ct_roster", JSON.stringify(rosterShifts));
+    }
+
+    // Load approvals
+    if (localStorage.getItem("ct_approvals")) {
+        approvalStates = JSON.parse(localStorage.getItem("ct_approvals"));
+    } else {
+        approvalStates = {
+            "shift_1111_2026-07-06T08:00:00Z": { status: "Authorised", authorisedBy: "System Admin (Admin)" },
+            "shift_2222_2026-07-08T09:00:00Z": { status: "Authorised", authorisedBy: "Alice Green (Duty Mgr)" }
+        };
+        localStorage.setItem("ct_approvals", JSON.stringify(approvalStates));
+    }
+
     // Initialize UI Icons
     lucide.createIcons();
 
@@ -81,6 +119,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Set Initial simulated distance
     updateSimulatedLocation(simulatedDistance);
+
+    // Fill roster dropdown
+    initRosterSelectors();
 
     // Initial table renders
     renderAll();
@@ -123,7 +164,22 @@ function renderPinReference() {
 }
 
 function saveLogs() {
+    logs.forEach(log => {
+        if (!log.accuracy) {
+            log.accuracy = `± ${Math.max(3, Math.round((log.distance || 0) / 10))}m`;
+        }
+        if (!log.ip) {
+            log.ip = `122.56.${Math.floor(Math.random() * 254) + 1}.${Math.floor(Math.random() * 254) + 1}`;
+        }
+        if (!log.userAgent) {
+            log.userAgent = navigator.userAgent.includes("Mobile") ? "Mobile browser (iOS)" : "Web desktop client (Linux)";
+        }
+    });
     localStorage.setItem("ct_logs", JSON.stringify(logs));
+}
+
+function saveApprovalStates() {
+    localStorage.setItem("ct_approvals", JSON.stringify(approvalStates));
 }
 
 function saveHolidays() {

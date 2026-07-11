@@ -104,6 +104,7 @@
                         <div class="phone-sub-nav">
                             <button class="sub-nav-btn active" id="sub-nav-clock" onclick="switchPhoneSubView('clock')">Clock-In</button>
                             <button class="sub-nav-btn" id="sub-nav-holiday" onclick="switchPhoneSubView('holiday')">Time Off</button>
+                            <button class="sub-nav-btn" id="sub-nav-roster" onclick="switchPhoneSubView('roster')">Roster</button>
                         </div>
 
                         <div class="phone-body">
@@ -220,6 +221,16 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Phone Subview: Roster -->
+                            <div id="phone-roster-subview" class="phone-sub-panel">
+                                <div class="phone-subview-header">
+                                    <h3>My Upcoming Shifts</h3>
+                                </div>
+                                <div id="phone-roster-list" class="requests-list">
+                                    <!-- Dynamic items -->
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -310,6 +321,8 @@
                 <div class="admin-tabs no-print">
                     <button class="admin-tab-btn active" id="tab-paye" onclick="switchAdminTab('paye')"><i data-lucide="dollar-sign"></i> PAYE Weekly Summary</button>
                     <button class="admin-tab-btn" id="tab-logs" onclick="switchAdminTab('logs')"><i data-lucide="history"></i> Geofence Clock-In Logs</button>
+                    <button class="admin-tab-btn" id="tab-roster" onclick="switchAdminTab('roster')"><i data-lucide="calendar"></i> Roster Planner</button>
+                    <button class="admin-tab-btn" id="tab-approvals" onclick="switchAdminTab('approvals')"><i data-lucide="check-square"></i> Shift Approvals</button>
                     <button class="admin-tab-btn" id="tab-holidays" onclick="switchAdminTab('holidays')"><i data-lucide="calendar"></i> Holiday Approvals</button>
                 </div>
 
@@ -410,6 +423,96 @@
                             </thead>
                             <tbody id="holidays-table-body">
                                 <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Admin Tab Content 4: Roster Planner -->
+                <div id="admin-roster-panel" class="admin-tab-panel">
+                    <div class="panel-header no-print">
+                        <div>
+                            <h3>Roster Planner & Scheduler</h3>
+                            <p>Assign scheduled shifts to staff members. Rostered shifts are displayed on employee mobile views.</p>
+                        </div>
+                    </div>
+                    <div class="roster-planner-layout no-print card" style="background-color:rgba(0,0,0,0.1); margin-bottom:24px; padding: 16px;">
+                        <form id="roster-form" onsubmit="submitRosterShift(event)">
+                            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:16px;">
+                                <div class="form-group">
+                                    <label for="roster-employee">Staff Member</label>
+                                    <select id="roster-employee" required style="width:100%; padding:8px; background-color:rgba(0,0,0,0.3)"></select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="roster-date">Date</label>
+                                    <input type="date" id="roster-date" required min="2026-07-10" style="width:100%; padding:8px; background-color:rgba(0,0,0,0.3)">
+                                </div>
+                                <div class="form-group">
+                                    <label for="roster-start">Start Time</label>
+                                    <input type="time" id="roster-start" required value="09:00" style="width:100%; padding:8px; background-color:rgba(0,0,0,0.3)">
+                                </div>
+                                <div class="form-group">
+                                    <label for="roster-end">End Time</label>
+                                    <input type="time" id="roster-end" required value="17:00" style="width:100%; padding:8px; background-color:rgba(0,0,0,0.3)">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="margin-top:12px;"><i data-lucide="plus"></i> Add Scheduled Shift</button>
+                        </form>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="report-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Employee</th>
+                                    <th>Role</th>
+                                    <th>Scheduled Shift</th>
+                                    <th>Status</th>
+                                    <th class="no-print">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="roster-table-body">
+                                <!-- Dynamic roster rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Admin Tab Content 5: Shift Approvals -->
+                <div id="admin-approvals-panel" class="admin-tab-panel">
+                    <div class="panel-header no-print">
+                        <div>
+                            <h3>Completed Shift Approvals</h3>
+                            <p>Authorize completed staff shifts. Unauthorised shifts are excluded from final PAYE payouts.</p>
+                        </div>
+                        <div class="actions">
+                            <div class="form-group" style="margin-bottom:0; display:flex; align-items:center; gap:8px;">
+                                <label for="authoriser-manager" style="margin-bottom:0; white-space:nowrap;">Authorising As:</label>
+                                <select id="authoriser-manager" style="width:200px; padding:6px 12px; background-color:rgba(0,0,0,0.3)">
+                                    <option value="System Admin (Admin)">System Admin (Admin)</option>
+                                    <option value="Alice Green (Duty Mgr)">Alice Green (Duty Mgr)</option>
+                                    <option value="Bob Johnson (Duty Mgr)">Bob Johnson (Duty Mgr)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="report-table">
+                            <thead>
+                                <tr>
+                                    <th>Shift Date</th>
+                                    <th>Employee</th>
+                                    <th>Role</th>
+                                    <th>Clock-In / Out</th>
+                                    <th>Net Hours</th>
+                                    <th>Method</th>
+                                    <th>Geofence Status</th>
+                                    <th>Approval Status</th>
+                                    <th class="no-print">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="approvals-table-body">
+                                <!-- Dynamic approvals rows -->
                             </tbody>
                         </table>
                     </div>
