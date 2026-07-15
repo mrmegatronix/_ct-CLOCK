@@ -9,7 +9,7 @@ const GEOFENCE_LIMIT = 20; // Green boundary (metres)
 const WARNING_LIMIT = 50;  // Orange boundary (metres)
 
 const EMPLOYEES = {
-    "1111": { id: "1111", name: "John Doe", role: "Bar Staff", rate: 25.00 },
+    "1111": { id: "1111", name: "Test User", role: "Bar Staff", rate: 25.00 },
     "2222": { id: "2222", name: "Jane Smith", role: "Kitchen Staff", rate: 26.50 },
     "3333": { id: "3333", name: "Bob Johnson", role: "Duty Manager", rate: 32.00 },
     "4444": { id: "4444", name: "Alice Green", role: "Duty Manager", rate: 32.00 }
@@ -17,11 +17,11 @@ const EMPLOYEES = {
 
 // Seed initial clock logs to show PAYE and admin reports immediately
 const SEED_LOGS = [
-    // John Doe shifts
-    { id: 1, employeeId: "1111", employeeName: "John Doe", role: "Bar Staff", timestamp: "2026-07-06T08:00:00Z", event: "Clock-In", method: "GPS Mobile", distance: 12, coordinates: "-43.4840, 172.6106", status: "Green Pass" },
-    { id: 2, employeeId: "1111", employeeName: "John Doe", role: "Bar Staff", timestamp: "2026-07-06T16:30:00Z", event: "Clock-Out", method: "GPS Mobile", distance: 15, coordinates: "-43.4841, 172.6107", status: "Green Pass" },
-    { id: 3, employeeId: "1111", employeeName: "John Doe", role: "Bar Staff", timestamp: "2026-07-07T08:15:00Z", event: "Clock-In", method: "GPS Mobile", distance: 125, coordinates: "-43.4851, 172.6120", status: "Red Flagged" }, // out of bounds
-    { id: 4, employeeId: "1111", employeeName: "John Doe", role: "Bar Staff", timestamp: "2026-07-07T17:15:00Z", event: "Clock-Out", method: "GPS Mobile", distance: 10, coordinates: "-43.4839, 172.6105", status: "Green Pass" },
+    // Test User shifts
+    { id: 1, employeeId: "1111", employeeName: "Test User", role: "Bar Staff", timestamp: "2026-07-06T08:00:00Z", event: "Clock-In", method: "GPS Mobile", distance: 12, coordinates: "-43.4840, 172.6106", status: "Green Pass" },
+    { id: 2, employeeId: "1111", employeeName: "Test User", role: "Bar Staff", timestamp: "2026-07-06T16:30:00Z", event: "Clock-Out", method: "GPS Mobile", distance: 15, coordinates: "-43.4841, 172.6107", status: "Green Pass" },
+    { id: 3, employeeId: "1111", employeeName: "Test User", role: "Bar Staff", timestamp: "2026-07-07T08:15:00Z", event: "Clock-In", method: "GPS Mobile", distance: 125, coordinates: "-43.4851, 172.6120", status: "Red Flagged" }, // out of bounds
+    { id: 4, employeeId: "1111", employeeName: "Test User", role: "Bar Staff", timestamp: "2026-07-07T17:15:00Z", event: "Clock-Out", method: "GPS Mobile", distance: 10, coordinates: "-43.4839, 172.6105", status: "Green Pass" },
     
     // Jane Smith shifts (PIN terminal)
     { id: 5, employeeId: "2222", employeeName: "Jane Smith", role: "Kitchen Staff", timestamp: "2026-07-08T09:00:00Z", event: "Clock-In", method: "PIN Terminal", distance: 0, coordinates: "-43.4839, 172.6105", status: "Green Pass" },
@@ -34,7 +34,7 @@ const SEED_LOGS = [
 
 // Seed holiday requests
 const SEED_HOLIDAYS = [
-    { id: 1, submitDate: "2026-07-08", employeeId: "1111", employeeName: "John Doe", role: "Bar Staff", type: "Annual Leave", startDate: "2026-07-20", endDate: "2026-07-24", totalDays: 5, reason: "Family holiday in Queenstown", status: "Pending" },
+    { id: 1, submitDate: "2026-07-08", employeeId: "1111", employeeName: "Test User", role: "Bar Staff", type: "Annual Leave", startDate: "2026-07-20", endDate: "2026-07-24", totalDays: 5, reason: "Family holiday in Queenstown", status: "Pending" },
     { id: 2, submitDate: "2026-07-05", employeeId: "2222", employeeName: "Jane Smith", role: "Kitchen Staff", type: "Sick Leave", startDate: "2026-07-06", endDate: "2026-07-06", totalDays: 1, reason: "Dental checkup", status: "Approved" }
 ];
 // State variables
@@ -43,14 +43,14 @@ let holidayRequests = [];
 let activeShifts = {}; // keyed by employeeId: { clockInTime, coordinates, distance, status, qrBypassed }
 let simulatedDistance = 10; // default 10 metres
 let qrBypassed = false;
-let currentUser = EMPLOYEES["1111"]; // John Doe as default mobile user
+let currentUser = EMPLOYEES["1111"]; // Test User as default mobile user
 
 // Roster state variables
 let rosterShifts = [];
 let approvalStates = {};
 
 const SEED_ROSTER = [
-    { id: 1, employeeId: "1111", employeeName: "John Doe", role: "Bar Staff", date: "2026-07-12", start: "09:00", end: "17:00" },
+    { id: 1, employeeId: "1111", employeeName: "Test User", role: "Bar Staff", date: "2026-07-12", start: "09:00", end: "17:00" },
     { id: 2, employeeId: "2222", employeeName: "Jane Smith", role: "Kitchen Staff", date: "2026-07-12", start: "10:00", end: "18:00" },
     { id: 3, employeeId: "3333", employeeName: "Bob Johnson", role: "Duty Manager", date: "2026-07-13", start: "08:00", end: "16:00" }
 ];
@@ -108,8 +108,15 @@ document.addEventListener("DOMContentLoaded", async () => {
             "shift_1111_2026-07-06T08:00:00Z": { status: "Authorised", authorisedBy: "System Admin (Admin)" },
             "shift_2222_2026-07-08T09:00:00Z": { status: "Authorised", authorisedBy: "Alice Green (Duty Mgr)" }
         };
-        localStorage.setItem("ct_approvals", JSON.stringify(approvalStates));
     }
+
+    // Migrate cache from old "John Doe" to "Test User"
+    logs.forEach(l => { if (l.employeeName === "John Doe") l.employeeName = "Test User"; });
+    holidayRequests.forEach(h => { if (h.employeeName === "John Doe") h.employeeName = "Test User"; });
+    rosterShifts.forEach(r => { if (r.employeeName === "John Doe") r.employeeName = "Test User"; });
+    saveLogs();
+    saveHolidays();
+    localStorage.setItem("ct_roster", JSON.stringify(rosterShifts));
 
     // Initialize UI Icons
     lucide.createIcons();
