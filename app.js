@@ -10,6 +10,14 @@ const WARNING_LIMIT = 50;  // Orange boundary (metres)
 
 const EMPLOYEES = {
     "1111": { id: "1111", name: "Test User", role: "Bar Staff", rate: 25.00 },
+    "1001": { id: "1001", name: "Robert", role: "Bar Staff", rate: 25.00 },
+    "1002": { id: "1002", name: "Bianca", role: "Bar Staff", rate: 25.00 },
+    "1003": { id: "1003", name: "Nicole", role: "Bar Staff", rate: 25.00 },
+    "1004": { id: "1004", name: "Nikko", role: "Bar Staff", rate: 25.00 },
+    "1005": { id: "1005", name: "Carma", role: "Bar Staff", rate: 25.00 },
+    "1006": { id: "1006", name: "Jess", role: "Bar Staff", rate: 25.00 },
+    "1007": { id: "1007", name: "Racheal", role: "Bar Staff", rate: 25.00 },
+    "1008": { id: "1008", name: "Harsh", role: "Bar Staff", rate: 25.00 },
     "2222": { id: "2222", name: "Jane Smith", role: "Kitchen Staff", rate: 26.50 },
     "3333": { id: "3333", name: "Bob Johnson", role: "Duty Manager", rate: 32.00 },
     "4444": { id: "4444", name: "Alice Green", role: "Duty Manager", rate: 32.00 }
@@ -50,13 +58,81 @@ let rosterShifts = [];
 let approvalStates = {};
 
 const SEED_ROSTER = [
-    { id: 1, employeeId: "1111", employeeName: "Test User", role: "Bar Staff", date: "2026-07-12", start: "09:00", end: "17:00" },
-    { id: 2, employeeId: "2222", employeeName: "Jane Smith", role: "Kitchen Staff", date: "2026-07-12", start: "10:00", end: "18:00" },
-    { id: 3, employeeId: "3333", employeeName: "Bob Johnson", role: "Duty Manager", date: "2026-07-13", start: "08:00", end: "16:00" }
+    // --- Week 1 (Week Ending 02/08/26) ---
+    { id: "r1_1", employeeId: "1001", employeeName: "Robert", role: "Bar Staff", date: "2026-07-28", start: "12:00", end: "17:00" },
+    { id: "r1_2", employeeId: "1001", employeeName: "Robert", role: "Bar Staff", date: "2026-07-29", start: "12:00", end: "23:00" },
+    { id: "r1_3", employeeId: "1001", employeeName: "Robert", role: "Bar Staff", date: "2026-07-30", start: "13:00", end: "23:00" },
+    { id: "r1_4", employeeId: "1002", employeeName: "Bianca", role: "Bar Staff", date: "2026-07-27", start: "08:30", end: "15:00" },
+    { id: "r1_5", employeeId: "1002", employeeName: "Bianca", role: "Bar Staff", date: "2026-07-28", start: "17:00", end: "22:00" },
+    { id: "r1_6", employeeId: "1002", employeeName: "Bianca", role: "Bar Staff", date: "2026-07-29", start: "08:30", end: "14:00" },
+    { id: "r1_7", employeeId: "1002", employeeName: "Bianca", role: "Bar Staff", date: "2026-07-30", start: "08:30", end: "16:00" },
+    { id: "r1_8", employeeId: "1002", employeeName: "Bianca", role: "Bar Staff", date: "2026-07-31", start: "08:30", end: "16:00" },
+    { id: "r1_9", employeeId: "1003", employeeName: "Nicole", role: "Bar Staff", date: "2026-07-27", start: "15:00", end: "21:00" },
+    { id: "r1_10", employeeId: "1003", employeeName: "Nicole", role: "Bar Staff", date: "2026-07-28", start: "08:30", end: "14:00" },
+    { id: "r1_11", employeeId: "1003", employeeName: "Nicole", role: "Bar Staff", date: "2026-07-29", start: "16:00", end: "23:00" },
+    { id: "r1_12", employeeId: "1003", employeeName: "Nicole", role: "Bar Staff", date: "2026-08-01", start: "08:30", end: "17:30" },
+    { id: "r1_13", employeeId: "1003", employeeName: "Nicole", role: "Bar Staff", date: "2026-08-02", start: "08:30", end: "22:00" },
+    { id: "r1_14", employeeId: "1004", employeeName: "Nikko", role: "Bar Staff", date: "2026-07-29", start: "17:00", end: "23:00" },
+    { id: "r1_15", employeeId: "1004", employeeName: "Nikko", role: "Bar Staff", date: "2026-07-30", start: "16:00", end: "23:00" },
+    { id: "r1_16", employeeId: "1004", employeeName: "Nikko", role: "Bar Staff", date: "2026-07-31", start: "16:00", end: "Close" },
+    { id: "r1_17", employeeId: "1004", employeeName: "Nikko", role: "Bar Staff", date: "2026-08-01", start: "16:00", end: "24:00" },
+    { id: "r1_18", employeeId: "1004", employeeName: "Nikko", role: "Bar Staff", date: "2026-08-02", start: "15:00", end: "22:00" },
+    { id: "r1_19", employeeId: "1005", employeeName: "Carma", role: "Bar Staff", date: "2026-07-28", start: "16:30", end: "Close" },
+    { id: "r1_20", employeeId: "1005", employeeName: "Carma", role: "Bar Staff", date: "2026-07-29", start: "16:30", end: "21:30" },
+    { id: "r1_21", employeeId: "1005", employeeName: "Carma", role: "Bar Staff", date: "2026-07-30", start: "16:00", end: "Close" },
+    { id: "r1_22", employeeId: "1005", employeeName: "Carma", role: "Bar Staff", date: "2026-07-31", start: "16:00", end: "Close" },
+    { id: "r1_23", employeeId: "1005", employeeName: "Carma", role: "Bar Staff", date: "2026-08-01", start: "16:00", end: "Close" },
+    { id: "r1_24", employeeId: "1006", employeeName: "Jess", role: "Bar Staff", date: "2026-07-30", start: "17:30", end: "20:30" },
+    { id: "r1_25", employeeId: "1006", employeeName: "Jess", role: "Bar Staff", date: "2026-07-31", start: "13:00", end: "20:00" },
+    { id: "r1_26", employeeId: "1006", employeeName: "Jess", role: "Bar Staff", date: "2026-08-01", start: "12:00", end: "20:00" },
+    { id: "r1_27", employeeId: "1006", employeeName: "Jess", role: "Bar Staff", date: "2026-08-02", start: "On Call", end: "On Call" },
+    { id: "r1_28", employeeId: "1007", employeeName: "Racheal", role: "Bar Staff", date: "2026-07-30", start: "17:30", end: "20:30" },
+    { id: "r1_29", employeeId: "1007", employeeName: "Racheal", role: "Bar Staff", date: "2026-08-02", start: "12:00", end: "16:30" },
+    { id: "r1_30", employeeId: "1008", employeeName: "Harsh", role: "Bar Staff", date: "2026-07-27", start: "16:30", end: "21:00" },
+    { id: "r1_31", employeeId: "1008", employeeName: "Harsh", role: "Bar Staff", date: "2026-07-30", start: "16:30", end: "Close" },
+    { id: "r1_32", employeeId: "1008", employeeName: "Harsh", role: "Bar Staff", date: "2026-07-31", start: "16:00", end: "Close" },
+    { id: "r1_33", employeeId: "1008", employeeName: "Harsh", role: "Bar Staff", date: "2026-08-01", start: "16:00", end: "Close" },
+    { id: "r1_34", employeeId: "1008", employeeName: "Harsh", role: "Bar Staff", date: "2026-08-02", start: "16:00", end: "Close" },
+
+    // --- Week 2 (Week Ending 09/08/26) ---
+    { id: "r2_1", employeeId: "1001", employeeName: "Robert", role: "Bar Staff", date: "2026-08-04", start: "12:00", end: "17:00" },
+    { id: "r2_2", employeeId: "1001", employeeName: "Robert", role: "Bar Staff", date: "2026-08-05", start: "12:00", end: "23:00" },
+    { id: "r2_3", employeeId: "1001", employeeName: "Robert", role: "Bar Staff", date: "2026-08-06", start: "13:00", end: "23:00" },
+    { id: "r2_4", employeeId: "1001", employeeName: "Robert", role: "Bar Staff", date: "2026-08-07", start: "13:00", end: "23:00" },
+    { id: "r2_5", employeeId: "1001", employeeName: "Robert", role: "Bar Staff", date: "2026-08-08", start: "12:00", end: "20:00" },
+    { id: "r2_6", employeeId: "1002", employeeName: "Bianca", role: "Bar Staff", date: "2026-08-03", start: "08:30", end: "15:00" },
+    { id: "r2_7", employeeId: "1002", employeeName: "Bianca", role: "Bar Staff", date: "2026-08-04", start: "17:00", end: "22:00" },
+    { id: "r2_8", employeeId: "1002", employeeName: "Bianca", role: "Bar Staff", date: "2026-08-05", start: "08:30", end: "14:00" },
+    { id: "r2_9", employeeId: "1002", employeeName: "Bianca", role: "Bar Staff", date: "2026-08-06", start: "08:30", end: "16:00" },
+    { id: "r2_10", employeeId: "1002", employeeName: "Bianca", role: "Bar Staff", date: "2026-08-07", start: "08:30", end: "16:00" },
+    { id: "r2_11", employeeId: "1003", employeeName: "Nicole", role: "Bar Staff", date: "2026-08-03", start: "15:00", end: "21:00" },
+    { id: "r2_12", employeeId: "1003", employeeName: "Nicole", role: "Bar Staff", date: "2026-08-04", start: "08:30", end: "14:00" },
+    { id: "r2_13", employeeId: "1003", employeeName: "Nicole", role: "Bar Staff", date: "2026-08-05", start: "16:00", end: "23:00" },
+    { id: "r2_14", employeeId: "1003", employeeName: "Nicole", role: "Bar Staff", date: "2026-08-08", start: "08:30", end: "17:30" },
+    { id: "r2_15", employeeId: "1003", employeeName: "Nicole", role: "Bar Staff", date: "2026-08-09", start: "08:30", end: "22:00" },
+    { id: "r2_16", employeeId: "1004", employeeName: "Nikko", role: "Bar Staff", date: "2026-08-05", start: "17:00", end: "23:00" },
+    { id: "r2_17", employeeId: "1004", employeeName: "Nikko", role: "Bar Staff", date: "2026-08-06", start: "16:00", end: "23:00" },
+    { id: "r2_18", employeeId: "1004", employeeName: "Nikko", role: "Bar Staff", date: "2026-08-07", start: "16:00", end: "21:00" },
+    { id: "r2_19", employeeId: "1004", employeeName: "Nikko", role: "Bar Staff", date: "2026-08-08", start: "16:00", end: "00:00" },
+    { id: "r2_20", employeeId: "1004", employeeName: "Nikko", role: "Bar Staff", date: "2026-08-09", start: "15:00", end: "20:30" },
+    { id: "r2_21", employeeId: "1005", employeeName: "Carma", role: "Bar Staff", date: "2026-08-04", start: "16:30", end: "Close" },
+    { id: "r2_22", employeeId: "1005", employeeName: "Carma", role: "Bar Staff", date: "2026-08-05", start: "16:30", end: "Close" },
+    { id: "r2_23", employeeId: "1005", employeeName: "Carma", role: "Bar Staff", date: "2026-08-06", start: "16:00", end: "Close" },
+    { id: "r2_24", employeeId: "1005", employeeName: "Carma", role: "Bar Staff", date: "2026-08-07", start: "16:00", end: "Close" },
+    { id: "r2_25", employeeId: "1005", employeeName: "Carma", role: "Bar Staff", date: "2026-08-08", start: "16:00", end: "Close" },
+    { id: "r2_26", employeeId: "1006", employeeName: "Jess", role: "Bar Staff", date: "2026-08-06", start: "17:30", end: "20:30" },
+    { id: "r2_27", employeeId: "1006", employeeName: "Jess", role: "Bar Staff", date: "2026-08-09", start: "On Call", end: "On Call" },
+    { id: "r2_28", employeeId: "1007", employeeName: "Racheal", role: "Bar Staff", date: "2026-08-09", start: "12:00", end: "16:30" },
+    { id: "r2_29", employeeId: "1008", employeeName: "Harsh", role: "Bar Staff", date: "2026-08-03", start: "16:30", end: "21:00" },
+    { id: "r2_30", employeeId: "1008", employeeName: "Harsh", role: "Bar Staff", date: "2026-08-06", start: "16:30", end: "Close" },
+    { id: "r2_31", employeeId: "1008", employeeName: "Harsh", role: "Bar Staff", date: "2026-08-07", start: "16:00", end: "Close" },
+    { id: "r2_32", employeeId: "1008", employeeName: "Harsh", role: "Bar Staff", date: "2026-08-08", start: "16:00", end: "Close" },
+    { id: "r2_33", employeeId: "1008", employeeName: "Harsh", role: "Bar Staff", date: "2026-08-09", start: "16:00", end: "Close" }
 ];
 
 // Pin Terminal variables
 let currentPinInput = "";
+
 
 // 2. Initialize Application
 document.addEventListener("DOMContentLoaded", async () => {
@@ -95,6 +171,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Load roster
     if (localStorage.getItem("ct_roster")) {
         rosterShifts = JSON.parse(localStorage.getItem("ct_roster"));
+        if (rosterShifts.length < 10) {
+            rosterShifts = [...SEED_ROSTER];
+            localStorage.setItem("ct_roster", JSON.stringify(rosterShifts));
+        }
     } else {
         rosterShifts = [...SEED_ROSTER];
         localStorage.setItem("ct_roster", JSON.stringify(rosterShifts));
@@ -1113,6 +1193,44 @@ function initRosterSelectors() {
             return `<option value="${empId}">${EMPLOYEES[empId].name} (${EMPLOYEES[empId].role})</option>`;
         }).join("");
     }
+
+    const phoneSelect = document.getElementById("phone-user-select");
+    if (phoneSelect) {
+        phoneSelect.innerHTML = Object.keys(EMPLOYEES).map(empId => {
+            return `<option value="${empId}" ${empId === currentUser.id ? 'selected' : ''}>${EMPLOYEES[empId].name}</option>`;
+        }).join("");
+
+        // Set initial values
+        const avatarEl = document.getElementById("phone-avatar");
+        if (avatarEl) {
+            const names = currentUser.name.split(" ");
+            const initials = names.map(n => n[0]).join("").substring(0, 2).toUpperCase();
+            avatarEl.textContent = initials;
+        }
+        const roleEl = document.getElementById("phone-user-role");
+        if (roleEl) {
+            roleEl.textContent = currentUser.role;
+        }
+
+        phoneSelect.addEventListener("change", (e) => {
+            const selectedId = e.target.value;
+            currentUser = EMPLOYEES[selectedId];
+
+            const avatarEl = document.getElementById("phone-avatar");
+            if (avatarEl) {
+                const names = currentUser.name.split(" ");
+                const initials = names.map(n => n[0]).join("").substring(0, 2).toUpperCase();
+                avatarEl.textContent = initials;
+            }
+
+            const roleEl = document.getElementById("phone-user-role");
+            if (roleEl) {
+                roleEl.textContent = currentUser.role;
+            }
+
+            renderAll();
+        });
+    }
 }
 
 function submitRosterShift(event) {
@@ -1155,7 +1273,9 @@ function renderRosterPlanner() {
         return;
     }
 
-    tableBody.innerHTML = rosterShifts.map(shift => {
+    const sortedShifts = [...rosterShifts].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    tableBody.innerHTML = sortedShifts.map(shift => {
         const dateStr = new Date(shift.date).toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' });
         return `
             <tr>
@@ -1183,7 +1303,9 @@ function renderPhoneRoster() {
         return;
     }
 
-    listEl.innerHTML = myShifts.map(shift => {
+    const sortedMyShifts = [...myShifts].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    listEl.innerHTML = sortedMyShifts.map(shift => {
         const dateStr = new Date(shift.date).toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'short' });
         return `
             <div class="phone-roster-card">

@@ -111,11 +111,14 @@
                             <!-- Phone Subview: Clock In -->
                             <div id="phone-clock-subview" class="phone-sub-panel active">
                                 <div class="profile-card">
-                                    <div class="avatar">TU</div>
-                                    <div class="profile-info">
-                                        <h4>Test User</h4>
-                                        <p>Bar Staff</p>
+                                    <div class="avatar" id="phone-avatar">TU</div>
+                                    <div class="profile-info" style="flex:1;">
+                                        <select id="phone-user-select" style="background:transparent; border:none; color:white; font-weight:600; font-size:16px; padding:0; margin:0; outline:none; cursor:pointer; width:100%; -webkit-appearance:none; -moz-appearance:none; appearance:none; display:block; line-height:1.2;">
+                                            <!-- Dynamically populated -->
+                                        </select>
+                                        <p id="phone-user-role" style="font-size:12px; color:rgba(255,255,255,0.7); margin:0;">Bar Staff</p>
                                     </div>
+                                    <i data-lucide="chevron-down" style="color:rgba(255,255,255,0.7); width:16px; height:16px;"></i>
                                 </div>
 
                                 <!-- Dynamic Distance Indicator -->
