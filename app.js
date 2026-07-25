@@ -1194,6 +1194,15 @@ function toggleShareQR(event) {
     event.stopPropagation();
     const dropdown = document.getElementById("share-qr-dropdown");
     const isVisible = dropdown.style.display === "block";
+    
+    if (!isVisible) {
+        const qrImg = dropdown.querySelector(".qr-code-img-wrapper img");
+        if (qrImg) {
+            const currentUrl = encodeURIComponent(window.location.href);
+            qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${currentUrl}`;
+        }
+    }
+    
     dropdown.style.display = isVisible ? "none" : "block";
 }
 
