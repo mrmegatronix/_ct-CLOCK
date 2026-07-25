@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coasters Tavern - Staff Portal</title>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #070a13 0%, #0f172a 100%);
+            --card-bg: rgba(30, 41, 59, 0.45);
+            --card-border: rgba(255, 255, 255, 0.06);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --color-primary: #3b82f6;
+            --color-primary-glow: rgba(59, 130, 246, 0.35);
+            --color-success: #10b981;
+            --color-success-glow: rgba(16, 185, 129, 0.35);
+            --color-danger: #f43f5e;
+            --color-danger-glow: rgba(244, 63, 94, 0.35);
+            --color-warning: #f59e0b;
+            --font-outfit: 'Outfit', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --border-radius: 20px;
+            --border-radius-sm: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: var(--font-outfit);
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        .phone-wrapper {
+            width: 100%;
+            max-width: 480px;
+            min-height: 100vh;
+            background: rgba(15, 23, 42, 0.3);
+            border-left: 1px solid rgba(255, 255, 255, 0.03);
+            border-right: 1px solid rgba(255, 255, 255, 0.03);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            position: relative;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Header Styles */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .brand-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-logo {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        .brand-title h1 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            background: linear-gradient(to right, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand-title span {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: block;
+        }
+
+        /* Profile Selector Dropdown */
+        .profile-picker {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 6px 12px;
+            color: var(--text-main);
+            font-family: var(--font-outfit);
+            font-size: 0.8rem;
+            font-weight: 600;
+            outline: none;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .profile-picker:focus {
+            border-color: var(--color-primary);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* NTP Sync Badge */
+        .ntp-status-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 30px;
+            padding: 4px 12px;
+            margin: 0 auto;
+            width: fit-content;
+        }
+
+        .pulse-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 8px currentColor;
+            animation: pulse-glow 2s infinite;
+        }
+
+        @keyframes pulse-glow {
+            0% { transform: scale(0.9); opacity: 0.6; }
+            50% { transform: scale(1.15); opacity: 1; }
+            100% { transform: scale(0.9); opacity: 0.6; }
+        }
+
+        /* Main Glassmorphism Clock Card */
+        .clock-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--border-radius);
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+            text-align: center;
+        }
+
+        .clock-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.05) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .analog-clock-mini {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.05);
+            background: rgba(15, 23, 42, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            margin-bottom: 15px;
+            box-shadow: inset 0 4px 10px rgba(0, 0, 0, 0.4);
+        }
+
+        .analog-hand {
+            position: absolute;
+            background: #fff;
+            border-radius: 4px;
+            transform-origin: bottom center;
+            bottom: 50%;
+            left: calc(50% - 1px);
+        }
+
+        .analog-hand-hour { width: 3px; height: 24px; background: #94a3b8; }
+        .analog-hand-minute { width: 2px; height: 32px; background: #cbd5e1; }
+        .analog-hand-second { width: 1px; height: 35px; background: var(--color-primary); }
+
+        .analog-center {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #fff;
+            position: absolute;
+            z-index: 5;
+        }
+
+        .digital-clock-display {
+            font-family: var(--font-mono);
+            font-size: 2.4rem;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            color: #fff;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+        }
+
+        .digital-date-display {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-top: 2px;
+            margin-bottom: 25px;
+        }
+
+        /* Large circular state button */
+        .btn-clock-circle {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            border: none;
+            outline: none;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border: 4px solid #1e293b;
+            color: #fff;
+            font-family: var(--font-outfit);
+            font-weight: 700;
+            font-size: 1.1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4), inset 0 2px 5px rgba(255,255,255,0.05);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            z-index: 10;
+        }
+
+        .btn-clock-circle::after {
+            content: '';
+            position: absolute;
+            inset: -8px;
+            border-radius: 50%;
+            border: 2px dashed rgba(255, 255, 255, 0.1);
+            animation: spin 30s linear infinite;
+        }
+
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+
+        .btn-clock-circle.active {
+            background: linear-gradient(135deg, #065f46 0%, #022c22 100%);
+            border-color: var(--color-success);
+            box-shadow: 0 0 35px var(--color-success-glow);
+        }
+
+        .btn-clock-circle.active.flagged {
+            background: linear-gradient(135deg, #991b1b 0%, #450a0a 100%);
+            border-color: var(--color-danger);
+            box-shadow: 0 0 35px var(--color-danger-glow);
+        }
+
+        .btn-clock-circle:active {
+            transform: scale(0.96);
+        }
+
+        .btn-clock-circle i {
+            transition: 0.3s;
+        }
+        .btn-clock-circle:hover i {
+            transform: scale(1.1);
+        }
+
+        /* Timer display */
+        .live-shift-timer {
+            margin-top: 25px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 50px;
+            padding: 8px 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            border: 1px solid rgba(255,255,255,0.03);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .live-shift-timer span {
+            font-family: var(--font-mono);
+            color: var(--color-success);
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        .live-shift-timer.flagged span {
+            color: var(--color-danger);
+        }
+
+        /* Break controls button */
+        .break-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+            border-radius: 12px;
+            padding: 10px 24px;
+            font-family: var(--font-outfit);
+            font-weight: 600;
+            font-size: 0.88rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .break-btn:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: var(--color-primary);
+        }
+
+        .break-btn.active {
+            background: rgba(245, 158, 11, 0.15);
+            border-color: var(--color-warning);
+            color: var(--color-warning);
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.15);
+        }
+
+        /* Custom Geofence Gauge Card */
+        .geofence-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--border-radius);
+            padding: 20px;
+        }
+
+        .geofence-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        .geofence-badge {
+            background: var(--color-success-glow);
+            color: #4ade80;
+            border: 1px solid rgba(16,185,129,0.2);
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 700;
+        }
+
+        .geofence-badge.flagged {
+            background: var(--color-danger-glow);
+            color: #fb7185;
+            border-color: rgba(244,63,94,0.2);
+        }
+
+        .geofence-bar-container {
+            height: 6px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            position: relative;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+
+        .geofence-bar-fill {
+            height: 100%;
+            background: var(--color-success);
+            width: 8%;
+            border-radius: 10px;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .geofence-bar-fill.warning {
+            background: var(--color-warning);
+        }
+
+        .geofence-bar-fill.flagged {
+            background: var(--color-danger);
+        }
+
+        .geofence-readout {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+        }
+
+        .geofence-dist {
+            font-family: var(--font-mono);
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .geofence-desc {
+            color: var(--text-muted);
+        }
+
+        /* Tab Navigation Bar */
+        .bottom-nav {
+            display: flex;
+            background: rgba(15, 23, 42, 0.8);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            margin: 0 -20px -20px -20px;
+            padding: 10px 10px calc(10px + env(safe-area-inset-bottom));
+            justify-content: space-around;
+            position: sticky;
+            bottom: 0;
+            z-index: 100;
+            backdrop-filter: blur(20px);
+        }
+
+        .bottom-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.7rem;
+            font-weight: 600;
+            transition: 0.2s;
+            background: none;
+            border: none;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .bottom-nav-item.active {
+            color: var(--color-primary);
+        }
+
+        /* Sections Panel Views */
+        .mobile-view-panel {
+            display: none;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .mobile-view-panel.active {
+            display: flex;
+        }
+
+        /* Holiday / Leave requests */
+        .request-form-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--border-radius);
+            padding: 20px;
+        }
+
+        .form-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #fff;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+
+        .form-control {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            padding: 8px 12px;
+            color: #fff;
+            font-family: var(--font-outfit);
+            font-size: 0.85rem;
+            outline: none;
+        }
+
+        .form-control:focus {
+            border-color: var(--color-primary);
+        }
+
+        .btn-submit {
+            background: var(--color-primary);
+            border: none;
+            color: #fff;
+            width: 100%;
+            padding: 10px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.88rem;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        /* Roster / Schedules list */
+        .roster-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--border-radius);
+            padding: 20px;
+        }
+
+        .roster-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-radius: var(--border-radius-sm);
+            background: rgba(0, 0, 0, 0.15);
+            margin-bottom: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.02);
+        }
+
+        .roster-info h4 {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .roster-info span {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .roster-badge {
+            background: rgba(59, 130, 246, 0.12);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 20px;
+            padding: 3px 10px;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+
+        /* Collapsible simulator card */
+        .sim-collapse-card {
+            background: rgba(30, 41, 59, 0.15);
+            border: 1px dashed rgba(255,255,255,0.06);
+            border-radius: var(--border-radius);
+            padding: 15px;
+        }
+
+        .sim-collapse-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .sim-collapse-content {
+            display: none;
+            margin-top: 15px;
+        }
+
+        .sim-collapse-content.active {
+            display: block;
+        }
+
+        .slider-control {
+            margin-bottom: 12px;
+        }
+        .slider-control label {
+            display: block;
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .slider-input {
+            width: 100%;
+            accent-color: var(--color-primary);
+        }
+
+        .pos-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            margin-top: 10px;
+        }
+
+        .pos-btn {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 8px;
+            padding: 6px;
+            color: var(--text-muted);
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .pos-btn:hover {
+            border-color: var(--color-primary);
+            color: #fff;
+        }
+
+        /* Out of bounds full screen warning overlay */
+        .out-of-bounds-overlay {
+            display: none;
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.95);
+            z-index: 500;
+            backdrop-filter: blur(25px);
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            text-align: center;
+            flex-direction: column;
+            gap: 20px;
+            border-radius: 12px;
+        }
+
+        .out-of-bounds-overlay.active {
+            display: flex;
+        }
+
+        .warning-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(244, 63, 94, 0.15);
+            border: 2px solid var(--color-danger);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-danger);
+            box-shadow: 0 0 25px rgba(244, 63, 94, 0.25);
+            animation: pulse-border 1.5s infinite;
+        }
+
+        @keyframes pulse-border {
+            0% { box-shadow: 0 0 0 0px rgba(244, 63, 94, 0.4); }
+            100% { box-shadow: 0 0 0 15px rgba(244, 63, 94, 0); }
+        }
+
+        .warning-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #fff;
+        }
+
+        .warning-desc {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* Holiday list items */
+        .request-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.15);
+            margin-bottom: 6px;
+            font-size: 0.8rem;
+        }
+
+        .request-item-details strong {
+            display: block;
+            color: #fff;
+        }
+        .request-item-details span {
+            color: var(--text-muted);
+            font-size: 0.72rem;
+        }
+
+        .badge-success { background: rgba(16,185,129,0.12); color: #10b981; border: 1px solid rgba(16,185,129,0.2); border-radius: 20px; padding: 2px 8px; font-size: 0.7rem; font-weight: 700; }
+        .badge-danger { background: rgba(244,63,94,0.12); color: #f43f5e; border: 1px solid rgba(244,63,94,0.2); border-radius: 20px; padding: 2px 8px; font-size: 0.7rem; font-weight: 700; }
+        .badge-warning { background: rgba(245,158,11,0.12); color: #f59e0b; border: 1px solid rgba(245,158,11,0.2); border-radius: 20px; padding: 2px 8px; font-size: 0.7rem; font-weight: 700; }
+    </style>
+</head>
+<body>
+    <div class="phone-wrapper">
+        <!-- Out of Bounds Warning Screen -->
+        <div id="out-of-bounds-overlay" class="out-of-bounds-overlay">
+            <div class="warning-icon">
+                <i data-lucide="map-pin-off" size="36"></i>
+            </div>
+            <div class="warning-title">GEOFENCE WARNING</div>
+            <div class="warning-desc">
+                You are currently flagged as <strong>Out of Bounds</strong> from Coasters Tavern.
+                Scan the Counter QR Code to authorize local bypass clocking.
+            </div>
+            <button class="btn-submit" style="background-color: var(--color-primary); display:flex; align-items:center; justify-content:center; gap:8px;" onclick="simulateQRScan()">
+                <i data-lucide="qr-code"></i> SCAN COUNTER QR CODE
+            </button>
+        </div>
+
+        <header>
+            <div class="brand-section">
+                <img src="logo_clean.png" alt="Coasters Tavern" class="brand-logo">
+                <div class="brand-title">
+                    <h1>Coasters Tavern</h1>
+                    <span>Staff Mobile Portal</span>
+                </div>
+            </div>
+            <select id="employee-select" class="profile-picker" onchange="changeProfile(this.value)">
+                <!-- Options populated by JS -->
+            </select>
+        </header>
+
+        <!-- NTP Status indicator badge -->
+        <div class="ntp-status-container">
+            <span class="ntp-status-badge">
+                <span class="pulse-dot" style="background:#fbbf24;"></span> Syncing Network Time...
+            </span>
+        </div>
+
+        <!-- VIEW 1: HOME (CLOCKING MAIN) -->
+        <div id="view-home" class="mobile-view-panel active">
+            <!-- Clock Info Card -->
+            <div class="clock-card">
+                <div class="analog-clock-mini">
+                    <div class="analog-hand analog-hand-hour" id="analog-hour"></div>
+                    <div class="analog-hand analog-hand-minute" id="analog-minute"></div>
+                    <div class="analog-hand analog-hand-second" id="analog-second"></div>
+                    <div class="analog-center"></div>
+                </div>
+
+                <div class="digital-clock-display" id="live-time">00:00:00</div>
+                <div class="digital-date-display" id="live-date">Friday, 10 July 2026</div>
+
+                <button class="btn-clock-circle" id="clock-btn" onclick="toggleClock()">
+                    <i data-lucide="power" size="28"></i>
+                    <span id="clock-btn-text">Clock In</span>
+                </button>
+
+                <div class="live-shift-timer" id="shift-timer-display" style="display: none;">
+                    Shift Time: <span id="shift-duration-val">00:00:00</span>
+                </div>
+
+                <button class="break-btn" id="break-btn" style="display: none;" onclick="toggleBreak()">
+                    <i data-lucide="coffee"></i>
+                    <span id="break-btn-text">Take Break</span>
+                </button>
+            </div>
+
+            <!-- Geofence Status Card -->
+            <div class="geofence-card">
+                <div class="geofence-header">
+                    <span>GEOFENCE RADIUS</span>
+                    <span class="geofence-badge" id="gauge-badge">Within Bounds</span>
+                </div>
+                <div class="geofence-bar-container">
+                    <div class="geofence-bar-fill" id="gauge-bar"></div>
+                </div>
+                <div class="geofence-readout">
+                    <span class="geofence-dist" id="distance-readout-val">8m</span>
+                    <span class="geofence-desc" id="distance-readout-desc">Inside venue boundaries</span>
+                </div>
+            </div>
+
+            <!-- Geofence GPS Simulation Controls (Accordion Drawer) -->
+            <div class="sim-collapse-card">
+                <div class="sim-collapse-header" onclick="document.getElementById('sim-content').classList.toggle('active')">
+                    <span>💻 MOCK GPS SIMULATOR (TEST CONTROLS)</span>
+                    <i data-lucide="sliders" size="14"></i>
+                </div>
+                <div class="sim-collapse-content" id="sim-content">
+                    <div class="slider-control">
+                        <label for="distance-slider">Adjust Distance: <span id="slider-val" style="font-weight:700;">10m</span></label>
+                        <input type="range" id="distance-slider" class="slider-input" min="0" max="250" value="10" oninput="updateSimulatedLocation(this.value)">
+                    </div>
+                    <div class="pos-grid">
+                        <button class="pos-btn" onclick="updateSimulatedLocation(8)">At Counter (8m)</button>
+                        <button class="pos-btn" onclick="updateSimulatedLocation(40)">Car Park (40m)</button>
+                        <button class="pos-btn" onclick="updateSimulatedLocation(180)">Off-site (180m)</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 2: ROSTER -->
+        <div id="view-roster" class="mobile-view-panel">
+            <div class="roster-card">
+                <div class="form-title" style="display:flex; justify-content:space-between; align-items:center;">
+                    <span>Shift Schedules</span>
+                    <i data-lucide="calendar" size="18" style="color: var(--color-primary)"></i>
+                </div>
+                <div id="phone-roster-list">
+                    <!-- Dynamic Shifts -->
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 3: HOLIDAYS -->
+        <div id="view-holidays" class="mobile-view-panel">
+            <!-- Submit Holiday Request Form -->
+            <div class="request-form-card">
+                <div class="form-title">Request Time Off</div>
+                <form id="holiday-form" onsubmit="submitHolidayRequest(event)">
+                    <div class="form-group">
+                        <label for="holiday-start">Start Date</label>
+                        <input type="date" id="holiday-start" class="form-control" required min="2026-07-25">
+                    </div>
+                    <div class="form-group">
+                        <label for="holiday-end">End Date</label>
+                        <input type="date" id="holiday-end" class="form-control" required min="2026-07-25">
+                    </div>
+                    <div class="form-group">
+                        <label for="holiday-type">Leave Type</label>
+                        <select id="holiday-type" class="form-control">
+                            <option value="Annual Leave">Annual Leave</option>
+                            <option value="Sick Leave">Sick Leave</option>
+                            <option value="Unpaid Leave">Unpaid Leave</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="holiday-reason">Reason (Optional)</label>
+                        <input type="text" id="holiday-reason" class="form-control" placeholder="Describe leave details...">
+                    </div>
+                    <button type="submit" class="btn-submit">Submit Request</button>
+                </form>
+            </div>
+
+            <!-- Submitted Requests -->
+            <div class="roster-card">
+                <div class="form-title">Request History</div>
+                <div id="phone-requests-list">
+                    <!-- Dynamic Requests -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Tabbed Bar -->
+        <nav class="bottom-nav">
+            <button class="bottom-nav-item active" id="tab-btn-home" onclick="switchMobileTab('home')">
+                <i data-lucide="home" size="20"></i>
+                <span>Home</span>
+            </button>
+            <button class="bottom-nav-item" id="tab-btn-roster" onclick="switchMobileTab('roster')">
+                <i data-lucide="calendar" size="20"></i>
+                <span>Roster</span>
+            </button>
+            <button class="bottom-nav-item" id="tab-btn-holidays" onclick="switchMobileTab('holidays')">
+                <i data-lucide="palmtree" size="20"></i>
+                <span>Leave</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- Scanner Mock Modal Overlay -->
+    <div id="qr-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:1000; align-items:center; justify-content:center; flex-direction:column; gap:15px;">
+        <div style="background:var(--card-bg); border:1px solid var(--card-border); padding:30px; border-radius:20px; text-align:center; max-width:320px; display:flex; flex-direction:column; align-items:center; gap:15px; backdrop-filter:blur(10px);">
+            <div class="warning-icon" style="background:rgba(16,185,129,0.15); border-color:var(--color-success); color:var(--color-success);">
+                <i data-lucide="scan" size="30"></i>
+            </div>
+            <h3 style="color:#fff; font-size:1.1rem; font-weight:700;">Scanning Counter QR Code...</h3>
+            <p style="font-size:0.8rem; color:var(--text-muted); line-height:1.4;">Align the tavern's wall-mounted QR code to authorize bypass credentials.</p>
+            <div id="qr-success-message" style="display:none; color:#34d399; font-size:0.8rem; font-weight:700; display:flex; align-items:center; gap:6px;">
+                <i data-lucide="check-circle-2" size="14"></i> QR Code Verified!
+            </div>
+            <button class="btn-submit" onclick="closeQRModal()">Cancel</button>
+        </div>
+    </div>
+
+    <!-- NTP sync script defined first -->
+    <script>
+        let timeOffsetMs = 0;
+        let ntpStatus = "offline";
+
+        async function syncTimeWithNtp() {
+            try {
+                const start = performance.now();
+                const response = await fetch('https://worldtimeapi.org/api/timezone/Pacific/Auckland');
+                if (response.ok) {
+                    const data = await response.json();
+                    const ntpTime = new Date(data.utc_datetime);
+                    const end = performance.now();
+                    const rtt = (end - start) / 2;
+                    const localTime = new Date(Date.now() - rtt);
+                    timeOffsetMs = ntpTime - localTime;
+                    ntpStatus = "synced";
+                    console.log(`NTP Synced. Offset: ${timeOffsetMs}ms`);
+                    updateNtpStatusBadge();
+                }
+            } catch (e) {
+                console.error("NTP sync failed, using client time.", e);
+                ntpStatus = "error";
+                updateNtpStatusBadge();
+            }
+        }
+
+        function updateNtpStatusBadge() {
+            const badges = document.querySelectorAll(".ntp-status-badge");
+            badges.forEach(badge => {
+                if (ntpStatus === "synced") {
+                    badge.style.color = "#4ade80";
+                    badge.innerHTML = `<span class="pulse-dot" style="background:#4ade80;"></span> NTP Synced (${timeOffsetMs >= 0 ? '+' : ''}${Math.round(timeOffsetMs)}ms)`;
+                } else if (ntpStatus === "error") {
+                    badge.style.color = "#fb7185";
+                    badge.innerHTML = `<span class="pulse-dot" style="background:#fb7185;"></span> NTP Sync Error (Local Time)`;
+                } else {
+                    badge.style.color = "#fbbf24";
+                    badge.innerHTML = `<span class="pulse-dot" style="background:#fbbf24;"></span> Syncing NTP...`;
+                }
+            });
+        }
+
+        function getSyncedTime() {
+            return new Date(Date.now() + timeOffsetMs);
+        }
+
+        // Initial sync
+        syncTimeWithNtp();
+        // Periodic sync every 5 minutes
+        setInterval(syncTimeWithNtp, 300000);
+
+        // Analog clock animation using Synced Time
+        function updateAnalogClock() {
+            const now = getSyncedTime();
+            const hour = now.getHours();
+            const minute = now.getMinutes();
+            const second = now.getSeconds();
+
+            const hourDeg = (hour * 30) + (minute * 0.5);
+            const minuteDeg = (minute * 6) + (second * 0.1);
+            const secondDeg = second * 6;
+
+            const hHand = document.getElementById("analog-hour");
+            const mHand = document.getElementById("analog-minute");
+            const sHand = document.getElementById("analog-second");
+
+            if (hHand) hHand.style.transform = `rotate(${hourDeg}deg)`;
+            if (mHand) mHand.style.transform = `rotate(${minuteDeg}deg)`;
+            if (sHand) sHand.style.transform = `rotate(${secondDeg}deg)`;
+        }
+        setInterval(updateAnalogClock, 1000);
+
+        // Tab views controller
+        function switchMobileTab(viewId) {
+            document.querySelectorAll(".mobile-view-panel").forEach(panel => panel.classList.remove("active"));
+            document.querySelectorAll(".bottom-nav-item").forEach(item => item.classList.remove("active"));
+
+            document.getElementById(`view-${viewId}`).classList.add("active");
+            document.getElementById(`tab-btn-${viewId}`).classList.add("active");
+        }
+    </script>
+
+    <!-- Main Logic script -->
+    <script src="app.js"></script>
+
+    <!-- Override/adapt logic functions for beautiful standalone mobile layout -->
+    <script>
+        // Custom UI Sync overrides for standalone mobile
+        function changeProfile(empId) {
+            currentUser = EMPLOYEES[empId];
+            localStorage.setItem("ct_current_user", empId);
+            renderAll();
+        }
+
+        // Override renderMobileUI to match our custom circular button design
+        const originalRenderMobileUI = renderMobileUI;
+        renderMobileUI = function() {
+            const clockBtn = document.getElementById("clock-btn");
+            if (!clockBtn) return;
+            
+            const clockBtnText = document.getElementById("clock-btn-text");
+            const timerDisplay = document.getElementById("shift-timer-display");
+            const breakBtn = document.getElementById("break-btn");
+            const breakBtnText = document.getElementById("break-btn-text");
+            const overlay = document.getElementById("out-of-bounds-overlay");
+
+            if (activeShifts[currentUser.id]) {
+                const shift = activeShifts[currentUser.id];
+                clockBtn.className = "btn-clock-circle active";
+                if (shift.status === "Red Flagged") {
+                    clockBtn.classList.add("flagged");
+                    if (overlay) overlay.classList.add("active");
+                } else {
+                    if (overlay) overlay.classList.remove("active");
+                }
+                
+                clockBtnText.textContent = "CLOCK OUT";
+                timerDisplay.style.display = "flex";
+                if (breakBtn) {
+                    breakBtn.style.display = "flex";
+                    if (shift.onBreak) {
+                        breakBtn.className = "break-btn active";
+                        breakBtnText.textContent = "End Break";
+                    } else {
+                        breakBtn.className = "break-btn";
+                        breakBtnText.textContent = "Take Break";
+                    }
+                }
+            } else {
+                clockBtn.className = "btn-clock-circle";
+                clockBtnText.textContent = "CLOCK IN";
+                timerDisplay.style.display = "none";
+                if (breakBtn) breakBtn.style.display = "none";
+                if (overlay) overlay.classList.remove("active");
+            }
+        };
+
+        // Populate Employee Switcher Dropdown
+        const select = document.getElementById("employee-select");
+        if (select) {
+            select.innerHTML = Object.keys(EMPLOYEES).map(empId => {
+                return `<option value="${empId}" ${empId === currentUser.id ? 'selected' : ''}>${EMPLOYEES[empId].name} (${EMPLOYEES[empId].role.split(' ')[0]})</option>`;
+            }).join('');
+        }
+
+        // Override showQRModal / closeQRModal to match mobile layout
+        showQRModal = function() {
+            document.getElementById("qr-modal").style.display = "flex";
+        };
+        closeQRModal = function() {
+            document.getElementById("qr-modal").style.display = "none";
+        };
+
+        // Run renders once
+        renderAll();
+    </script>
+</body>
+</html>

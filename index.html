@@ -22,10 +22,10 @@
             </div>
         </div>
         <nav class="app-nav">
-            <button class="nav-btn active" id="nav-btn-employee" onclick="switchView('employee')">
+            <a class="nav-btn" href="mobile.html" target="_blank" style="text-decoration:none;">
                 <i data-lucide="smartphone"></i> Staff Mobile App
-            </button>
-            <button class="nav-btn" id="nav-btn-terminal" onclick="switchView('terminal')">
+            </a>
+            <button class="nav-btn active" id="nav-btn-terminal" onclick="switchView('terminal')">
                 <i data-lucide="tablet"></i> Venue PIN Terminal
             </button>
             <button class="nav-btn" id="nav-btn-admin" onclick="checkAdminAccess()">
@@ -116,132 +116,9 @@
                                         <select id="phone-user-select" style="background:transparent; border:none; color:white; font-weight:600; font-size:16px; padding:0; margin:0; outline:none; cursor:pointer; width:100%; -webkit-appearance:none; -moz-appearance:none; appearance:none; display:block; line-height:1.2;">
                                             <!-- Dynamically populated -->
                                         </select>
-                                        <p id="phone-user-role" style="font-size:12px; color:rgba(255,255,255,0.7); margin:0;">Bar Staff</p>
-                                    </div>
-                                    <i data-lucide="chevron-down" style="color:rgba(255,255,255,0.7); width:16px; height:16px;"></i>
-                                </div>
-
-                                <!-- Dynamic Distance Indicator -->
-                                <div class="distance-gauge card">
-                                    <div class="gauge-header">
-                                        <span>Geofence Status</span>
-                                        <span class="badge" id="gauge-badge">In Range</span>
-                                    </div>
-                                    <div class="gauge-bar-container">
-                                        <div class="gauge-bar" id="gauge-bar"></div>
-                                        <div class="gauge-marker" style="left: 8%;">
-                                            <span class="marker-label">20m</span>
-                                        </div>
-                                        <div class="gauge-marker" style="left: 20%;">
-                                            <span class="marker-label">50m</span>
-                                        </div>
-                                    </div>
-                                    <div class="distance-readout">
-                                        <span class="distance-val" id="distance-readout-val">10m</span>
-                                        <span class="distance-desc" id="distance-readout-desc">Within venue boundary</span>
-                                    </div>
-                                </div>
-
-                                <!-- Main Clock Action -->
-                                <div class="clock-action-container">
-                                    <div class="analog-clock-wrapper">
-                                        <div class="analog-clock">
-                                            <img src="logo_clean.png" alt="Clock Face" class="analog-clock-face">
-                                            <div class="analog-hand analog-hand-hour"></div>
-                                            <div class="analog-hand analog-hand-minute"></div>
-                                            <div class="analog-hand analog-hand-second"></div>
-                                            <div class="analog-center"></div>
-                                        </div>
-                                    </div>
-                                    <div class="digital-clock" id="live-time">15:26:07</div>
-                                    <div class="digital-date" id="live-date">Friday, 10 July</div>
-                                    
-                                    <button class="btn-clock" id="clock-btn" onclick="toggleClock()">
-                                        <div class="clock-icon-wrapper">
-                                            <i data-lucide="power" size="32"></i>
-                                        </div>
-                                        <span id="clock-btn-text">Clock In</span>
-                                    </button>
-
-                                    <div class="shift-timer-display" id="shift-timer-display" style="display: none;">
-                                        Shift Duration: <span id="shift-duration-val">00:00:00</span>
-                                        <div class="break-controls" id="break-controls" style="margin-top: 10px;">
-                                            <button class="btn btn-sm btn-outline" id="break-btn" onclick="toggleBreak()">
-                                                <i data-lucide="coffee"></i> <span id="break-btn-text">Start Break</span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- QR Code Sign-on Bypass -->
-                                <div class="qr-bypass-section card" id="qr-bypass-card" style="display: none;">
-                                    <div class="qr-bypass-header">
-                                        <i data-lucide="qr-code"></i>
-                                        <div>
-                                            <h5>Location Flagged</h5>
-                                            <p>Scan Tavern Bar QR to authorize clock-in</p>
-                                        </div>
-                                    </div>
-                                    <button class="btn btn-sm btn-primary btn-block" onclick="simulateQRScan()">
-                                        Scan Venue QR Code
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- Phone Subview: Holiday Requests -->
-                            <div id="phone-holiday-subview" class="phone-sub-panel">
-                                <div class="phone-subview-header">
-                                    <h3>Request Time Off</h3>
-                                </div>
-                                <form id="holiday-form" onsubmit="submitHolidayRequest(event)">
-                                    <div class="form-group">
-                                        <label for="holiday-start">Start Date</label>
-                                        <input type="date" id="holiday-start" required min="2026-07-10">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="holiday-end">End Date</label>
-                                        <input type="date" id="holiday-end" required min="2026-07-10">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="holiday-type">Leave Type</label>
-                                        <select id="holiday-type">
-                                            <option value="Annual Leave">Annual Leave</option>
-                                            <option value="Sick Leave">Sick Leave</option>
-                                            <option value="Unpaid Leave">Unpaid Leave</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="holiday-reason">Reason (Optional)</label>
-                                        <textarea id="holiday-reason" rows="2" placeholder="Describe leave details..."></textarea>
-                                    </div>
-                                    <button type="submit" class="btn btn-primary btn-block">Submit Request</button>
-                                </form>
-
-                                <div class="phone-requests-list-container">
-                                    <h4>Your Requests</h4>
-                                    <div id="phone-requests-list" class="requests-list">
-                                        <!-- Dynamic items -->
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Phone Subview: Roster -->
-                            <div id="phone-roster-subview" class="phone-sub-panel">
-                                <div class="phone-subview-header">
-                                    <h3>My Upcoming Shifts</h3>
-                                </div>
-                                <div id="phone-roster-list" class="requests-list">
-                                    <!-- Dynamic items -->
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
 
         <!-- View 2: Venue PIN Terminal (Phoneless Staff) -->
-        <section id="terminal-view" class="view-panel no-print">
+        <section id="terminal-view" class="view-panel active no-print">
             <div class="terminal-container card">
                 <div class="terminal-header">
                     <div class="terminal-logo">

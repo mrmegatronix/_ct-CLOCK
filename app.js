@@ -963,6 +963,7 @@ function renderAll() {
 }
 function renderMobileUI() {
     const clockBtn = document.getElementById("clock-btn");
+    if (!clockBtn) return;
     const clockBtnText = document.getElementById("clock-btn-text");
     const timerDisplay = document.getElementById("shift-timer-display");
 
@@ -1159,10 +1160,12 @@ function renderStats() {
         flaggedEl.textContent = count;
         
         const flaggedIcon = document.getElementById("stat-flagged-icon");
-        if (count > 0) {
-            flaggedIcon.parentElement.classList.add("text-danger");
-        } else {
-            flaggedIcon.parentElement.classList.remove("text-danger");
+        if (flaggedIcon) {
+            if (count > 0) {
+                flaggedIcon.parentElement.classList.add("text-danger");
+            } else {
+                flaggedIcon.parentElement.classList.remove("text-danger");
+            }
         }
     }
 
