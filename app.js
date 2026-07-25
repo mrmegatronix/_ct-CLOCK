@@ -226,18 +226,21 @@ async function loadEnvConfig() {
                     const key = parts[0].trim();
                     const value = parts[1].trim();
                     if (key === 'ADMIN_PIN') {
-                        // Dynamic insertion of Admin into EMPLOYEES
-                        EMPLOYEES[value] = { id: value, name: "System Admin", role: "Administrator", rate: 45.00 };
+                        EMPLOYEES[value] = { id: value, name: "admin-nikko", role: "Administrator", rate: 45.00 };
+                    }
+                    if (key === 'DEMO_PIN') {
+                        EMPLOYEES[value] = { id: value, name: "demo", role: "Administrator", rate: 45.00 };
                     }
                 }
             });
         } else {
-            // Fallback if file fetched but error status
-            EMPLOYEES["5555"] = { id: "5555", name: "System Admin", role: "Administrator", rate: 45.00 };
+            EMPLOYEES["5551"] = { id: "5551", name: "admin-nikko", role: "Administrator", rate: 45.00 };
+            EMPLOYEES["0001"] = { id: "0001", name: "demo", role: "Administrator", rate: 45.00 };
         }
     } catch (e) {
-        console.warn("Could not load .env file, using default admin 5555 fallback", e);
-        EMPLOYEES["5555"] = { id: "5555", name: "System Admin", role: "Administrator", rate: 45.00 };
+        console.warn("Could not load .env file, using default fallbacks", e);
+        EMPLOYEES["5551"] = { id: "5551", name: "admin-nikko", role: "Administrator", rate: 45.00 };
+        EMPLOYEES["0001"] = { id: "0001", name: "demo", role: "Administrator", rate: 45.00 };
     }
 }
 
@@ -551,6 +554,9 @@ function appendPin(num) {
     if (currentPinInput.length < 4) {
         currentPinInput += num;
         document.getElementById("pin-input").value = currentPinInput;
+        if (currentPinInput.length === 4) {
+            setTimeout(submitPin, 100);
+        }
     }
 }
 
@@ -558,6 +564,21 @@ function clearPin() {
     currentPinInput = "";
     document.getElementById("pin-input").value = "";
 }
+
+window.addEventListener('keydown', (e) => {
+    // Only capture digits when we don't focus another text input
+    if (document.activeElement.tagName === 'INPUT' && document.activeElement.id !== 'pin-input') return;
+    if (e.key >= '0' && e.key <= '9') {
+        appendPin(e.key);
+    } else if (e.key === 'Backspace') {
+        currentPinInput = currentPinInput.slice(0, -1);
+        document.getElementById("pin-input").value = currentPinInput;
+    } else if (e.key === 'Escape' || e.key === 'Delete') {
+        clearPin();
+    } else if (e.key === 'Enter') {
+        submitPin();
+    }
+});
 
 function submitPin() {
     const feedbackEl = document.getElementById("terminal-feedback");
