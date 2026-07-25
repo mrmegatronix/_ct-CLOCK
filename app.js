@@ -249,7 +249,7 @@ function renderPinReference() {
     if (!pinRefListEl) return;
     
     pinRefListEl.innerHTML = Object.values(EMPLOYEES).map(emp => {
-        return `<div class="pin-ref-item"><span>${emp.name} (${emp.role})</span> <strong>${emp.id}</strong></div>`;
+        return `<div class="pin-ref-item"><span>${emp.name} (${emp.role})</span> <strong style="color:var(--color-primary); font-family:monospace; font-size:1.05rem;">${emp.id}</strong></div>`;
     }).join("");
 }
 
@@ -308,6 +308,18 @@ function switchView(viewId) {
 
     document.getElementById(`${viewId}-view`).classList.add("active");
     document.getElementById(`nav-btn-${viewId}`).classList.add("active");
+}
+
+function checkAdminAccess() {
+    const pin = prompt("Enter Admin/Manager PIN to access portal:");
+    if (pin) {
+        const emp = EMPLOYEES[pin];
+        if (emp && emp.role === "Administrator") {
+            switchView('admin');
+        } else {
+            alert("Access Denied: Invalid PIN or insufficient privileges.");
+        }
+    }
 }
 
 function switchPhoneSubView(subviewId) {

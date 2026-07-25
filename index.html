@@ -28,7 +28,7 @@
             <button class="nav-btn" id="nav-btn-terminal" onclick="switchView('terminal')">
                 <i data-lucide="tablet"></i> Venue PIN Terminal
             </button>
-            <button class="nav-btn" id="nav-btn-admin" onclick="switchView('admin')">
+            <button class="nav-btn" id="nav-btn-admin" onclick="checkAdminAccess()">
                 <i data-lucide="shield-check"></i> Manager / PAYE Portal
             </button>
         </nav>
@@ -280,9 +280,11 @@
 
                     <!-- Right Side: Active Terminal Status / Roster -->
                     <div class="terminal-info">
-                        <h3>Employee Quick Reference PINs</h3>
-                        <div class="pin-reference-list" id="pin-ref-list">
-                            <!-- Dynamic items -->
+                        <h3>Terminal Status & Activity</h3>
+                        <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px; padding: 15px; font-size: 0.85rem; color: var(--muted); margin-bottom: 15px; box-sizing: border-box;">
+                            <p style="margin-bottom: 10px; display: flex; align-items: center; gap: 6px; color: #4ade80;"><span style="width: 8px; height: 8px; border-radius: 50%; background: #4ade80; display: inline-block; box-shadow: 0 0 8px #4ade80;"></span> Active Terminal Status</p>
+                            <p style="margin-bottom: 8px;"><strong>Location:</strong> 1 Daniels Road Redwood</p>
+                            <p><strong>Geofence check:</strong> Enabled (Within boundary)</p>
                         </div>
                         <div id="terminal-feedback" class="terminal-feedback">
                             <!-- Feedback alert message -->
@@ -327,6 +329,7 @@
                     <button class="admin-tab-btn" id="tab-roster" onclick="switchAdminTab('roster')"><i data-lucide="calendar"></i> Roster Planner</button>
                     <button class="admin-tab-btn" id="tab-approvals" onclick="switchAdminTab('approvals')"><i data-lucide="check-square"></i> Shift Approvals</button>
                     <button class="admin-tab-btn" id="tab-holidays" onclick="switchAdminTab('holidays')"><i data-lucide="calendar"></i> Holiday Approvals</button>
+                    <button class="admin-tab-btn" id="tab-pins" onclick="switchAdminTab('pins')"><i data-lucide="key"></i> Employee PINs</button>
                 </div>
 
                 <!-- Admin Tab Content 1: PAYE Summary (Printable) -->
@@ -518,6 +521,19 @@
                                 <!-- Dynamic approvals rows -->
                             </tbody>
                         </table>
+                    </div>
+                </div>
+
+                <!-- Admin Tab Content 6: Employee PINs -->
+                <div id="admin-pins-panel" class="admin-tab-panel">
+                    <div class="panel-header no-print">
+                        <div>
+                            <h3>Employee Quick Reference PINs</h3>
+                            <p>Confidential PIN code references for phone-less terminal logins.</p>
+                        </div>
+                    </div>
+                    <div class="pin-reference-list" id="pin-ref-list" style="margin-top: 15px; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px;">
+                        <!-- Dynamic items -->
                     </div>
                 </div>
             </div>

@@ -819,19 +819,19 @@ p {
 .pin-ref-item {
     display: flex;
     justify-content: space-between;
-    font-size: 0.9rem;
-    padding: 8px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    align-items: center;
+    font-size: 0.85rem;
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--border-radius-sm);
+    transition: all 0.2s ease;
 }
 
-.pin-ref-item:last-child {
-    border-bottom: none;
-}
-
-.pin-ref-item strong {
-    color: var(--color-primary);
-    font-family: monospace;
-    font-size: 1rem;
+.pin-ref-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--color-primary);
+    transform: translateY(-1px);
 }
 
 .terminal-feedback {
