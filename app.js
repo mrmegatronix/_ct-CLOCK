@@ -249,7 +249,7 @@ function renderPinReference() {
     if (!pinRefListEl) return;
     
     pinRefListEl.innerHTML = Object.values(EMPLOYEES).map(emp => {
-        return `<div class="pin-ref-item"><span>${emp.name} (${emp.role})</span> <strong style="color:var(--color-primary); font-family:monospace; font-size:1.05rem;">${emp.id}</strong></div>`;
+        return `<div class="pin-ref-item"><span>${emp.name} (${emp.role})</span> <strong style="color:var(--color-primary); font-family:monospace; font-size:1.05rem;">••••</strong></div>`;
     }).join("");
 }
 
