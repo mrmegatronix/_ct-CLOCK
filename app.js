@@ -1,8 +1,9 @@
 /* ==========================================================================
-   Coasters Tavern Shift Clock-in Logic Sheets (Modern Vanilla Javascript)
+   Coasters Tavern - Staff Clock-In & PAYE System
+   Production Build — localStorage persistence, real GPS geofencing
    ========================================================================== */
 
-// 1. Mock Database Configuration
+// 1. Configuration
 const VENUE_LAT = -43.4839;
 const VENUE_LNG = 172.6105;
 const GEOFENCE_LIMIT = 20; // Green boundary (metres)
@@ -23,7 +24,7 @@ const EMPLOYEES = {
     "4444": { id: "4444", name: "Alice Green", role: "Duty Manager", rate: 32.00 }
 };
 
-// Seed initial clock logs to show PAYE and admin reports immediately
+// Initial demonstration data
 const SEED_LOGS = [
     // Test User shifts
     { id: 1, employeeId: "1111", employeeName: "Test User", role: "Bar Staff", timestamp: "2026-07-06T08:00:00Z", event: "Clock-In", method: "GPS Mobile", distance: 12, coordinates: "-43.4840, 172.6106", status: "Green Pass" },
@@ -40,7 +41,7 @@ const SEED_LOGS = [
     { id: 8, employeeId: "3333", employeeName: "Bob Johnson", role: "Duty Manager", timestamp: "2026-07-09T18:00:00Z", event: "Clock-Out", method: "GPS Mobile", distance: 14, coordinates: "-43.4840, 172.6106", status: "Green Pass" }
 ];
 
-// Seed holiday requests
+// Initial holiday data
 const SEED_HOLIDAYS = [
     { id: 1, submitDate: "2026-07-08", employeeId: "1111", employeeName: "Test User", role: "Bar Staff", type: "Annual Leave", startDate: "2026-07-20", endDate: "2026-07-24", totalDays: 5, reason: "Family holiday in Queenstown", status: "Pending" },
     { id: 2, submitDate: "2026-07-05", employeeId: "2222", employeeName: "Jane Smith", role: "Kitchen Staff", type: "Sick Leave", startDate: "2026-07-06", endDate: "2026-07-06", totalDays: 1, reason: "Dental checkup", status: "Approved" }
@@ -282,24 +283,24 @@ function saveActiveShifts() {
 
 // 3. Clock & UI view controls
 function startLiveClocks() {
+    let colonVisible = true;
     setInterval(() => {
         const now = new Date();
-        
-        // Digital clock in phone mockup
-        const liveTimeEl = document.getElementById("live-time");
-        if (liveTimeEl) liveTimeEl.textContent = now.toLocaleTimeString();
+        const hrs = String(now.getHours()).padStart(2, '0');
+        const mins = String(now.getMinutes()).padStart(2, '0');
+        const secs = String(now.getSeconds()).padStart(2, '0');
+        const sep = colonVisible ? ':' : ' ';
 
-        // Phone Status Bar Clock
-        const phoneTimeEl = document.getElementById("phone-time");
-        if (phoneTimeEl) {
-            const mins = String(now.getMinutes()).padStart(2, '0');
-            const hrs = String(now.getHours()).padStart(2, '0');
-            phoneTimeEl.textContent = `${hrs}:${mins}`;
-        }
+        const liveTimeEl = document.getElementById('live-time');
+        if (liveTimeEl) liveTimeEl.textContent = `${hrs}${sep}${mins}${sep}${secs}`;
 
-        // Live shift counter update
+        const phoneTimeEl = document.getElementById('phone-time');
+        if (phoneTimeEl) phoneTimeEl.textContent = `${hrs}${colonVisible ? ':' : ' '}${mins}`;
+
+        colonVisible = !colonVisible;
+
         updateShiftDurationDisplay();
-    }, 1000);
+    }, 500);
 }
 
 function switchView(viewId) {
@@ -338,7 +339,7 @@ function switchAdminTab(tabId) {
     document.getElementById(`tab-${tabId}`).classList.add("active");
 }
 
-// 4. Geofencing Engine & Distance Mock
+// 4. Geofencing Engine
 function updateSimulatedLocation(meters) {
     simulatedDistance = parseInt(meters);
     document.getElementById("slider-val").textContent = `${simulatedDistance}m`;
@@ -428,7 +429,7 @@ function calculateHaversine(lat1, lon1, lat2, lon2) {
     return R * c; // in metres
 }
 
-// 5. QR Code bypass simulation
+// 5. QR Code Bypass
 function simulateQRScan() {
     document.getElementById("qr-modal").classList.add("active");
     document.getElementById("qr-success-message").style.display = "none";
@@ -459,8 +460,13 @@ function toggleClock() {
     const timerDisplay = document.getElementById("shift-timer-display");
 
     const now = new Date();
-    const latOffset = (simulatedDistance * 0.000009);
-    const coordsStr = `${(VENUE_LAT + latOffset).toFixed(6)}, ${(VENUE_LNG + latOffset).toFixed(6)}`;
+    let coordsStr;
+    if (window._realGPSCoords) {
+        coordsStr = `${window._realGPSCoords.lat.toFixed(6)}, ${window._realGPSCoords.lng.toFixed(6)}`;
+    } else {
+        const latOffset = (simulatedDistance * 0.000009);
+        coordsStr = `${(VENUE_LAT + latOffset).toFixed(6)}, ${(VENUE_LNG + latOffset).toFixed(6)}`;
+    }
 
     if (!activeShifts[userId]) {
         // Clocking In
@@ -749,8 +755,13 @@ function toggleBreak() {
     if (!activeShifts[userId]) return;
     
     const activeShift = activeShifts[userId];
-    const latOffset = (simulatedDistance * 0.000009);
-    const coordsStr = `${(VENUE_LAT + latOffset).toFixed(6)}, ${(VENUE_LNG + latOffset).toFixed(6)}`;
+    let coordsStr;
+    if (window._realGPSCoords) {
+        coordsStr = `${window._realGPSCoords.lat.toFixed(6)}, ${window._realGPSCoords.lng.toFixed(6)}`;
+    } else {
+        const latOffset = (simulatedDistance * 0.000009);
+        coordsStr = `${(VENUE_LAT + latOffset).toFixed(6)}, ${(VENUE_LNG + latOffset).toFixed(6)}`;
+    }
 
     if (!activeShift.onBreak) {
         activeShift.onBreak = true;
@@ -960,6 +971,10 @@ function renderAll() {
     renderRosterPlanner();
     renderPhoneRoster();
     renderApprovalsTable();
+    const printDateEl = document.getElementById('print-report-date');
+    if (printDateEl) {
+        printDateEl.textContent = new Date().toLocaleDateString('en-NZ', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    }
 }
 function renderMobileUI() {
     const clockBtn = document.getElementById("clock-btn");

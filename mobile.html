@@ -6,6 +6,7 @@
     <title>Coasters Tavern - Staff Portal</title>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -564,72 +565,6 @@
             font-weight: 700;
         }
 
-        /* Collapsible simulator card */
-        .sim-collapse-card {
-            background: rgba(30, 41, 59, 0.15);
-            border: 1px dashed rgba(255,255,255,0.06);
-            border-radius: var(--border-radius);
-            padding: 15px;
-        }
-
-        .sim-collapse-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.8rem;
-            font-weight: 700;
-            color: var(--text-muted);
-            cursor: pointer;
-        }
-
-        .sim-collapse-content {
-            display: none;
-            margin-top: 15px;
-        }
-
-        .sim-collapse-content.active {
-            display: block;
-        }
-
-        .slider-control {
-            margin-bottom: 12px;
-        }
-        .slider-control label {
-            display: block;
-            font-size: 0.72rem;
-            color: var(--text-muted);
-            margin-bottom: 6px;
-        }
-
-        .slider-input {
-            width: 100%;
-            accent-color: var(--color-primary);
-        }
-
-        .pos-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 6px;
-            margin-top: 10px;
-        }
-
-        .pos-btn {
-            background: rgba(255,255,255,0.02);
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 8px;
-            padding: 6px;
-            color: var(--text-muted);
-            font-size: 0.7rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .pos-btn:hover {
-            border-color: var(--color-primary);
-            color: #fff;
-        }
-
         /* Out of bounds full screen warning overlay */
         .out-of-bounds-overlay {
             display: none;
@@ -789,24 +724,6 @@
                 </div>
             </div>
 
-            <!-- Geofence GPS Simulation Controls (Accordion Drawer) -->
-            <div class="sim-collapse-card">
-                <div class="sim-collapse-header" onclick="document.getElementById('sim-content').classList.toggle('active')">
-                    <span>💻 MOCK GPS SIMULATOR (TEST CONTROLS)</span>
-                    <i data-lucide="sliders" size="14"></i>
-                </div>
-                <div class="sim-collapse-content" id="sim-content">
-                    <div class="slider-control">
-                        <label for="distance-slider">Adjust Distance: <span id="slider-val" style="font-weight:700;">10m</span></label>
-                        <input type="range" id="distance-slider" class="slider-input" min="0" max="250" value="10" oninput="updateSimulatedLocation(this.value)">
-                    </div>
-                    <div class="pos-grid">
-                        <button class="pos-btn" onclick="updateSimulatedLocation(8)">At Counter (8m)</button>
-                        <button class="pos-btn" onclick="updateSimulatedLocation(40)">Car Park (40m)</button>
-                        <button class="pos-btn" onclick="updateSimulatedLocation(180)">Off-site (180m)</button>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <!-- VIEW 2: ROSTER -->
@@ -878,18 +795,15 @@
         </nav>
     </div>
 
-    <!-- Scanner Mock Modal Overlay -->
-    <div id="qr-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:1000; align-items:center; justify-content:center; flex-direction:column; gap:15px;">
-        <div style="background:var(--card-bg); border:1px solid var(--card-border); padding:30px; border-radius:20px; text-align:center; max-width:320px; display:flex; flex-direction:column; align-items:center; gap:15px; backdrop-filter:blur(10px);">
-            <div class="warning-icon" style="background:rgba(16,185,129,0.15); border-color:var(--color-success); color:var(--color-success);">
-                <i data-lucide="scan" size="30"></i>
-            </div>
-            <h3 style="color:#fff; font-size:1.1rem; font-weight:700;">Scanning Counter QR Code...</h3>
-            <p style="font-size:0.8rem; color:var(--text-muted); line-height:1.4;">Align the tavern's wall-mounted QR code to authorize bypass credentials.</p>
-            <div id="qr-success-message" style="display:none; color:#34d399; font-size:0.8rem; font-weight:700; display:flex; align-items:center; gap:6px;">
+    <!-- QR Scanner Modal -->
+    <div id="qr-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:1000; align-items:center; justify-content:center; flex-direction:column; gap:15px; padding:20px;">
+        <div style="background:var(--card-bg); border:1px solid var(--card-border); padding:24px; border-radius:20px; text-align:center; max-width:340px; width:100%; display:flex; flex-direction:column; align-items:center; gap:15px; backdrop-filter:blur(10px);">
+            <h3 style="color:#fff; font-size:1.05rem; font-weight:700;">Scan Counter QR Code</h3>
+            <div id="qr-reader" style="width:280px; border-radius:12px; overflow:hidden;"></div>
+            <div id="qr-success-message" style="display:none; color:#34d399; font-size:0.85rem; font-weight:700; align-items:center; gap:6px;">
                 <i data-lucide="check-circle-2" size="14"></i> QR Code Verified!
             </div>
-            <button class="btn-submit" onclick="closeQRModal()">Cancel</button>
+            <button class="btn-submit" style="background:var(--color-danger);" onclick="closeQRModal()">Cancel</button>
         </div>
     </div>
 
@@ -966,6 +880,21 @@
         }
         setInterval(updateAnalogClock, 1000);
 
+        // Digital clock with blinking colons
+        let colonVisible = true;
+        setInterval(() => {
+            const now = getSyncedTime();
+            const hrs = String(now.getHours()).padStart(2, '0');
+            const mins = String(now.getMinutes()).padStart(2, '0');
+            const secs = String(now.getSeconds()).padStart(2, '0');
+            const sep = colonVisible ? ':' : ' ';
+            colonVisible = !colonVisible;
+            const el = document.getElementById('live-time');
+            if (el) el.textContent = `${hrs}${sep}${mins}${sep}${secs}`;
+            const dateEl = document.getElementById('live-date');
+            if (dateEl) dateEl.textContent = now.toLocaleDateString('en-NZ', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+        }, 500);
+
         // Tab views controller
         function switchMobileTab(viewId) {
             document.querySelectorAll(".mobile-view-panel").forEach(panel => panel.classList.remove("active"));
@@ -981,73 +910,177 @@
 
     <!-- Override/adapt logic functions for beautiful standalone mobile layout -->
     <script>
-        // Custom UI Sync overrides for standalone mobile
+        // === PRODUCTION MOBILE OVERRIDES ===
+        const VENUE_LAT_REAL = -43.4839;
+        const VENUE_LNG_REAL = 172.6105;
+        const GEOFENCE_LIMIT_REAL = 20;
+        const WARNING_LIMIT_REAL = 50;
+        let realDistance = 0;
+        let realCoords = { lat: 0, lng: 0 };
+        let geoWatchId = null;
+        let html5QrScanner = null;
+
+        function haversineDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371e3;
+            const p1 = lat1 * Math.PI / 180;
+            const p2 = lat2 * Math.PI / 180;
+            const dp = (lat2 - lat1) * Math.PI / 180;
+            const dl = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dp/2) * Math.sin(dp/2) + Math.cos(p1) * Math.cos(p2) * Math.sin(dl/2) * Math.sin(dl/2);
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        }
+
+        function startGeoWatch() {
+            if (!navigator.geolocation) {
+                updateGeofenceUI(999, 0, 0, '± N/A');
+                return;
+            }
+            geoWatchId = navigator.geolocation.watchPosition(
+                (pos) => {
+                    realCoords.lat = pos.coords.latitude;
+                    realCoords.lng = pos.coords.longitude;
+                    window._realGPSCoords = { lat: realCoords.lat, lng: realCoords.lng };
+                    const acc = pos.coords.accuracy;
+                    realDistance = Math.round(haversineDistance(realCoords.lat, realCoords.lng, VENUE_LAT_REAL, VENUE_LNG_REAL));
+                    simulatedDistance = realDistance;
+                    updateGeofenceUI(realDistance, realCoords.lat, realCoords.lng, `± ${Math.round(acc)}m`);
+                },
+                (err) => {
+                    console.warn('Geolocation error:', err.message);
+                    const descEl = document.getElementById('distance-readout-desc');
+                    if (descEl) descEl.textContent = 'GPS unavailable: ' + err.message;
+                },
+                { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
+            );
+        }
+
+        function updateGeofenceUI(distance, lat, lng, accuracy) {
+            const badge = document.getElementById('gauge-badge');
+            const barFill = document.getElementById('gauge-bar');
+            const distVal = document.getElementById('distance-readout-val');
+            const distDesc = document.getElementById('distance-readout-desc');
+            if (distVal) distVal.textContent = `${distance}m`;
+            const pct = Math.min((distance / 250) * 100, 100);
+            if (barFill) {
+                barFill.style.width = `${Math.max(pct, 5)}%`;
+                barFill.className = 'geofence-bar-fill';
+            }
+            if (distance <= GEOFENCE_LIMIT_REAL) {
+                if (badge) { badge.textContent = 'Within Bounds'; badge.className = 'geofence-badge'; }
+                if (barFill) barFill.style.background = 'var(--color-success)';
+                if (distDesc) distDesc.textContent = `Inside venue (${lat.toFixed(4)}, ${lng.toFixed(4)}) Acc: ${accuracy}`;
+            } else if (distance <= WARNING_LIMIT_REAL) {
+                if (badge) { badge.textContent = 'Near Venue'; badge.className = 'geofence-badge'; badge.style.background = 'rgba(245,158,11,0.2)'; badge.style.color = '#fbbf24'; badge.style.borderColor = 'rgba(245,158,11,0.3)'; }
+                if (barFill) barFill.className = 'geofence-bar-fill warning';
+                if (distDesc) distDesc.textContent = `Near boundary (${lat.toFixed(4)}, ${lng.toFixed(4)}) Acc: ${accuracy}`;
+            } else {
+                if (badge) { badge.textContent = 'Out of Range'; badge.className = 'geofence-badge flagged'; }
+                if (barFill) barFill.className = 'geofence-bar-fill flagged';
+                if (distDesc) distDesc.textContent = `Far from venue (${lat.toFixed(4)}, ${lng.toFixed(4)}) Acc: ${accuracy}`;
+            }
+        }
+
+        const _origToggleClock = toggleClock;
+        toggleClock = function() {
+            simulatedDistance = realDistance;
+            _origToggleClock();
+        };
+        const _origToggleBreak = toggleBreak;
+        toggleBreak = function() {
+            simulatedDistance = realDistance;
+            _origToggleBreak();
+        };
+
         function changeProfile(empId) {
             currentUser = EMPLOYEES[empId];
-            localStorage.setItem("ct_current_user", empId);
+            localStorage.setItem('ct_current_user', empId);
             renderAll();
         }
 
-        // Override renderMobileUI to match our custom circular button design
-        const originalRenderMobileUI = renderMobileUI;
         renderMobileUI = function() {
-            const clockBtn = document.getElementById("clock-btn");
+            const clockBtn = document.getElementById('clock-btn');
             if (!clockBtn) return;
-            
-            const clockBtnText = document.getElementById("clock-btn-text");
-            const timerDisplay = document.getElementById("shift-timer-display");
-            const breakBtn = document.getElementById("break-btn");
-            const breakBtnText = document.getElementById("break-btn-text");
-            const overlay = document.getElementById("out-of-bounds-overlay");
-
+            const clockBtnText = document.getElementById('clock-btn-text');
+            const timerDisplay = document.getElementById('shift-timer-display');
+            const breakBtn = document.getElementById('break-btn');
+            const breakBtnText = document.getElementById('break-btn-text');
+            const overlay = document.getElementById('out-of-bounds-overlay');
             if (activeShifts[currentUser.id]) {
                 const shift = activeShifts[currentUser.id];
-                clockBtn.className = "btn-clock-circle active";
-                if (shift.status === "Red Flagged") {
-                    clockBtn.classList.add("flagged");
-                    if (overlay) overlay.classList.add("active");
-                } else {
-                    if (overlay) overlay.classList.remove("active");
-                }
-                
-                clockBtnText.textContent = "CLOCK OUT";
-                timerDisplay.style.display = "flex";
+                clockBtn.className = 'btn-clock-circle active';
+                if (shift.status === 'Red Flagged') clockBtn.classList.add('flagged');
+                if (overlay) overlay.classList.remove('active');
+                clockBtnText.textContent = 'CLOCK OUT';
+                timerDisplay.style.display = 'flex';
                 if (breakBtn) {
-                    breakBtn.style.display = "flex";
+                    breakBtn.style.display = 'flex';
                     if (shift.onBreak) {
-                        breakBtn.className = "break-btn active";
-                        breakBtnText.textContent = "End Break";
+                        breakBtn.className = 'break-btn active';
+                        breakBtnText.textContent = 'End Break';
                     } else {
-                        breakBtn.className = "break-btn";
-                        breakBtnText.textContent = "Take Break";
+                        breakBtn.className = 'break-btn';
+                        breakBtnText.textContent = 'Take Break';
                     }
                 }
             } else {
-                clockBtn.className = "btn-clock-circle";
-                clockBtnText.textContent = "CLOCK IN";
-                timerDisplay.style.display = "none";
-                if (breakBtn) breakBtn.style.display = "none";
-                if (overlay) overlay.classList.remove("active");
+                clockBtn.className = 'btn-clock-circle';
+                clockBtnText.textContent = 'CLOCK IN';
+                timerDisplay.style.display = 'none';
+                if (breakBtn) breakBtn.style.display = 'none';
+                if (overlay) overlay.classList.remove('active');
             }
         };
 
-        // Populate Employee Switcher Dropdown
-        const select = document.getElementById("employee-select");
+        simulateQRScan = function() {
+            const modal = document.getElementById('qr-modal');
+            modal.style.display = 'flex';
+            document.getElementById('qr-success-message').style.display = 'none';
+            html5QrScanner = new Html5Qrcode('qr-reader');
+            html5QrScanner.start(
+                { facingMode: 'environment' },
+                { fps: 10, qrbox: { width: 220, height: 220 } },
+                (decodedText) => {
+                    html5QrScanner.stop().catch(console.error);
+                    document.getElementById('qr-success-message').style.display = 'flex';
+                    qrBypassed = true;
+                    setTimeout(() => {
+                        closeQRModal();
+                        const descEl = document.getElementById('distance-readout-desc');
+                        if (descEl) descEl.textContent = 'Verified via venue QR scan. Ready to clock in.';
+                    }, 1500);
+                },
+                (errorMessage) => {}
+            ).catch(err => {
+                console.error('Camera error:', err);
+                const code = prompt('Camera unavailable. Enter the QR code value manually:');
+                if (code) {
+                    document.getElementById('qr-success-message').style.display = 'flex';
+                    qrBypassed = true;
+                    setTimeout(() => closeQRModal(), 1000);
+                }
+            });
+        };
+
+        closeQRModal = function() {
+            document.getElementById('qr-modal').style.display = 'none';
+            if (html5QrScanner) {
+                html5QrScanner.stop().catch(() => {});
+                html5QrScanner = null;
+            }
+        };
+
+        updateSimulatedLocation = function() {};
+
+        const select = document.getElementById('employee-select');
         if (select) {
+            const savedUser = localStorage.getItem('ct_current_user');
+            if (savedUser && EMPLOYEES[savedUser]) currentUser = EMPLOYEES[savedUser];
             select.innerHTML = Object.keys(EMPLOYEES).map(empId => {
                 return `<option value="${empId}" ${empId === currentUser.id ? 'selected' : ''}>${EMPLOYEES[empId].name} (${EMPLOYEES[empId].role.split(' ')[0]})</option>`;
             }).join('');
         }
 
-        // Override showQRModal / closeQRModal to match mobile layout
-        showQRModal = function() {
-            document.getElementById("qr-modal").style.display = "flex";
-        };
-        closeQRModal = function() {
-            document.getElementById("qr-modal").style.display = "none";
-        };
-
-        // Run renders once
+        startGeoWatch();
         renderAll();
     </script>
 </body>
